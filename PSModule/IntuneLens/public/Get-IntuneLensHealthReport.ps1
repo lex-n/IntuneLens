@@ -22,13 +22,8 @@ function Get-IntuneLensHealthReport {
         Page size for the first request to Graph (where supported). Defaults to 200.
 
     .EXAMPLE
-        $report = Get-IntuneLensHealthReport -ClientId '00000000-0000-0000-0000-000000000000'
+        $report = Get-IntuneLensHealthReport
         Runs interactive device-code sign-in and returns an [IntuneLensReport].
-
-    .EXAMPLE
-        $ctx = Connect-IntuneLens -ClientId '00000000-0000-0000-0000-000000000000'
-        $report = Get-IntuneLensHealthReport -AccessToken $ctx.AccessToken -All
-        Reuses an existing token and collects all pages.
 
     .NOTES
         Author: Alex Nuryiev
@@ -38,7 +33,6 @@ function Get-IntuneLensHealthReport {
     [OutputType('IntuneLensReport')]
     param(
         [string] $AccessToken,
-        [string] $ClientId,
         [switch] $All,   # fetch all pages by default
         [int]    $Top = 200
     )
@@ -46,23 +40,35 @@ function Get-IntuneLensHealthReport {
     Set-StrictMode -Version Latest
     $ErrorActionPreference = 'Stop'
 
-    # 1) Token
+    # AccessToken
     if (-not $AccessToken) {
-        if (-not $ClientId) { throw "Provide -AccessToken or -ClientId." }
-        $ctx = Connect-IntuneLens -ClientId $ClientId
-        $AccessToken = $ctx.AccessToken
+        if ($script:IntuneLensContext -and $script:IntuneLensContext.AccessToken) {
+            # Check if the stored token is still valid (5 min skew buffer)
+            $now = Get-Date
+            $limit = $now.AddMinutes(5)
+
+            if ($script:IntuneLensContext.ExpiresOn -le $limit) {
+                throw "The stored access token has expired or is about to expire. Run Connect-IntuneLens again."
+            }
+
+            $AccessToken = $script:IntuneLensContext.AccessToken
+        }
+        else {
+            throw "No AccessToken available. Run Connect-IntuneLens first."
+        }
     }
 
-    # 2) Collect
+
+    # Collect
     $devices = Get-IntuneDevices -AccessToken $AccessToken -Top $Top -All:$All
 
-    # 3) Analyze
+    # Analyze
     $deviceOverview = Get-IntuneDeviceOverview -Devices $devices
 
-    # 4) Wrap analyzed outputs into typed sections
+    # Wrap analyzed outputs into typed sections
     $secOverview = New-IntuneLensSection -Title 'Device Overview' -Data $deviceOverview
 
-    # 5) Build the typed report
+    # Build the typed report
     $report = [IntuneLensReport]::new()
     $report.CollectedAt = Get-Date
     $report.Sections = @(

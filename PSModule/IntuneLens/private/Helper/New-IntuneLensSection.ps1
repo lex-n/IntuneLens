@@ -17,12 +17,11 @@ function New-IntuneLensSection {
         Optional nested IntuneLensSection[].
 
     .EXAMPLE
-        $ctx = Connect-IntuneLens -ClientId '00000000-0000-0000-0000-000000000000'
-        $devices = Get-IntuneDevices -AccessToken $ctx.AccessToken -All
+        $devices = Get-IntuneDevices -AccessToken <AccessToken> -All
         $overview = Get-IntuneDeviceOverview -Devices $devices
         $section  = New-IntuneLensSection -Title 'Device Overview' -Data $overview
 
-        This example connects to Intune, collects managed devices, computes the device overview,
+        This example collects managed devices, computes the device overview,
         and wraps it in an IntuneLensSection ready to add to the report.
         
     .NOTES
