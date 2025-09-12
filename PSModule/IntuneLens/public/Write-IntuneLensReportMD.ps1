@@ -5,7 +5,7 @@ function Write-IntuneLensReportMD {
 
     .DESCRIPTION
         Write-IntuneLensReportMD takes a typed [IntuneLensReport] from Get-IntuneLensHealthReport,
-        renders each section, and writes the final Markdown file to disk. If the optional Microsoft 
+        renders each section, and writes the final Markdown report file. If the optional Microsoft
         formatter module (FormatMarkdownTable) is installed, it will be used automatically; 
         otherwise a simple built-in renderer is used.
 
@@ -19,15 +19,15 @@ function Write-IntuneLensReportMD {
         Optional document title. Defaults to "IntuneLens – Intune Health Report".
 
     .EXAMPLE
-        $report = Get-IntuneLensHealthReport -ClientId '00000000-0000-0000-0000-000000000000'
-        Write-IntuneLensReportMD -Path ("./reports/IntuneLens_report_{0}.md" -f (Get-Date -Format 'yyyyMMdd_HHmmss')) -Report $report 
+        $report = Get-IntuneLensHealthReport
+        Write-IntuneLensReportMD -Path ("./reports/IntuneLens_report_{0}.md" -f (Get-Date -Format 'yyyyMMdd_HHmmss')) -Report $report
 
     .NOTES
         Author: Alex Nuryiev
 
     .LINK
         https://github.com/microsoft/FormatPowerShellToMarkdownTable
-#>
+    #>
 
     [CmdletBinding()]
     param(

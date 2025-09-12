@@ -26,22 +26,28 @@ By automating the assessment process, IntuneLens saves administrators time, redu
 - Admin consent granted for those permissions
 
 ### Installation
-Install IntuneLens module from PowerShell Gallery
+The required modules are available in the PowerShell Gallery, making installation quick and easy.
 
 ```powershell
 
+Install-Module Microsoft.Graph -Scope CurrentUser
 Install-Module IntuneLens
 
 ```
 
 ### Usage
 
-Run IntuneLens health check and save report to Markdown file.
+Run IntuneLens health check and save the report as a Markdown file.
 
 ```powershell
+# Connect to your tenant
+Connect-IntuneLens
 
-$report = Get-IntuneLensHealthReport -ClientId '00000000-0000-0000-0000-000000000000' 
-Write-IntuneLensReportMD -Path ("./reports/IntuneLens_report_{0}.md" -f (Get-Date -Format 'yyyyMMdd_HHmmss')) -Report $report 
+# Build the report
+$report = Get-IntuneLensHealthReport
+
+# Save the report to a Markdown file
+Write-IntuneLensReportMD -Path ("./reports/IntuneLens_report_{0}.md" -f (Get-Date -Format 'yyyyMMdd_HHmmss')) -Report $report
 
 ```
 The file will be created in the reports/ directory with a timestamp in the name, for example:
