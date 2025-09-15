@@ -38,7 +38,6 @@ function Get-IntuneDevices {
     $endpoint = "$base/deviceManagement/managedDevices"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    # limit payload to what we need
     $url = "$endpoint`?`$select=id,deviceName,operatingSystem,complianceState,azureADDeviceId,userPrincipalName,lastSyncDateTime&`$top=$Top"
 
     $acc = @()
@@ -48,7 +47,6 @@ function Get-IntuneDevices {
         $url = if ($All -and $resp.'@odata.nextLink') { $resp.'@odata.nextLink' } else { $null }
     } while ($url)
 
-    # Return neat objects
     $acc | ForEach-Object {
         [pscustomobject]@{
             id                = $_.id

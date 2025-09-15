@@ -58,21 +58,16 @@ function Get-IntuneLensHealthReport {
         }
     }
 
-
-    # Collect
     $devices = Get-IntuneDevices -AccessToken $AccessToken -Top $Top -All:$All
 
-    # Analyze
     $deviceOverview = Get-IntuneDeviceOverview -Devices $devices
 
-    # Wrap analyzed outputs into typed sections
-    $secOverview = New-IntuneLensSection -Title 'Device Overview' -Data $deviceOverview
+    $deviceOverviewSection = Build-IntuneDeviceOverviewSection -Overview $deviceOverview
 
-    # Build the typed report
     $report = [IntuneLensReport]::new()
     $report.CollectedAt = Get-Date
     $report.Sections = @(
-        $secOverview
+        $deviceOverviewSection
     )
 
     return $report
