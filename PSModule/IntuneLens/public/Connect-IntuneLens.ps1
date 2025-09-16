@@ -25,7 +25,8 @@ function Connect-IntuneLens {
         [string[]]$Scopes = @(
             "DeviceManagementConfiguration.Read.All",
             "DeviceManagementManagedDevices.Read.All",
-            "Directory.Read.All"
+            "Directory.Read.All",
+            "ServiceHealth.Read.All"
         )
     )
 

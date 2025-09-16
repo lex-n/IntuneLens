@@ -18,7 +18,7 @@ function Build-IntuneDeviceOverviewSection {
     }
 
     New-IntuneLensSection -Title 'Device Overview' -Data $topNode -SubSections @(
-        (New-IntuneLensSection -Title 'Operating System Overview'  -Data ($Overview.OperatingSystem)),
-        (New-IntuneLensSection -Title 'Compliance Status Overview' -Data ($Overview.Compliance))
+        (New-IntuneLensSection -Title 'Device Operating System Overview'  -Data ($Overview.OperatingSystem)),
+        (New-IntuneLensSection -Title 'Device Compliance Status Overview' -Data ($Overview.Compliance))
     )
 }

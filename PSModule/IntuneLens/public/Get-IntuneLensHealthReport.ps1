@@ -59,15 +59,18 @@ function Get-IntuneLensHealthReport {
     }
 
     $devices = Get-IntuneDevices -AccessToken $AccessToken -Top $Top -All:$All
-
     $deviceOverview = Get-IntuneDeviceOverview -Devices $devices
-
     $deviceOverviewSection = Build-IntuneDeviceOverviewSection -Overview $deviceOverview
+
+    $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
+    $intuneServiceStatus = Get-IntuneServiceStatus -Incidents $intuneActiveIncidents
+    $intuneServiceStatusSection = Build-IntuneServiceStatusSection -Overview $intuneServiceStatus
 
     $report = [IntuneLensReport]::new()
     $report.CollectedAt = Get-Date
     $report.Sections = @(
-        $deviceOverviewSection
+        $deviceOverviewSection,
+        $intuneServiceStatusSection
     )
 
     return $report

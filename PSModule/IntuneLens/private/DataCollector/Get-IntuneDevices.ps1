@@ -4,8 +4,8 @@ function Get-IntuneDevices {
         Collects managed devices from Microsoft Graph.
 
     .DESCRIPTION
-        Queries the Graph endpoint /deviceManagement/managedDevices and returns the
-        raw objects. Supports paging (-All) and top-N limiting (-Top).
+        Queries the Microsoft Graph endpoint /deviceManagement/managedDevices
+        and returns the raw objects. Supports paging (-All) and top-N limiting (-Top).
         Intended for use by analyzers, not for direct export.
 
     .PARAMETER AccessToken
