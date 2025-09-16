@@ -1,19 +1,19 @@
-function Get-IntuneActiveIncidents {
+function Get-IntuneActionRequiredMessages {
     <#
     .SYNOPSIS
-        Collect active Microsoft Intune incidents for the tenant.
+        Collect "Action Required" Microsoft Intune messages for the tenant.
 
     .DESCRIPTION
-        Calls the Microsoft Graph endpoint /admin/serviceAnnouncement/issues with filter:
-        "service eq 'Microsoft Intune' and classification eq 'incident' and isResolved eq false".
+        Calls the Microsoft Graph endpoint /admin/serviceAnnouncement/messages
+        to retrieve "Action Required" messages for Microsoft Intune.
         Intended for use by analyzers, not for direct export.
 
     .PARAMETER AccessToken
         Bearer token for Microsoft Graph (required).
 
     .EXAMPLE
-        $incidents = Get-IntuneActiveIncidents -AccessToken <AccessToken>
-
+        $messages = Get-IntuneActionRequiredMessages -AccessToken <AccessToken>
+    
     .NOTES
         Author: Alex Nuryiev
     #>
@@ -26,10 +26,10 @@ function Get-IntuneActiveIncidents {
     )
 
     $base = "https://graph.microsoft.com/beta"
-    $endpoint = "$base/admin/serviceAnnouncement/issues"
+    $endpoint = "$base/admin/serviceAnnouncement/messages"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $filter = "service eq 'Microsoft Intune' and classification eq 'incident' and isResolved eq false"
+    $filter = "services/any(s:s eq 'Microsoft Intune') and contains(title,'Action Required')"
     $url = "$endpoint`?`$filter=$([uri]::EscapeDataString($filter))&`$select=id"
 
     $items = @()
@@ -37,7 +37,7 @@ function Get-IntuneActiveIncidents {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
         if ($resp.value) {
-            $items += $resp.value
+            $items += ($resp.value | ForEach-Object { $_.id }) | Where-Object { $_ }
         }
 
         if ($resp.PSObject.Properties.Name -contains '@odata.nextLink') {
@@ -48,9 +48,5 @@ function Get-IntuneActiveIncidents {
         }
     } while ($url)
 
-    $items | ForEach-Object {
-        [pscustomobject]@{
-            id = $_.id
-        }
-    }
+    return $items
 }

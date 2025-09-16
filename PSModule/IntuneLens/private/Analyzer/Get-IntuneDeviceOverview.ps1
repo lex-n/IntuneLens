@@ -14,7 +14,7 @@ function Get-IntuneDeviceOverview {
         Array of device objects as returned by Get-IntuneDevices.
 
     .EXAMPLE
-        $devices = Get-IntuneDevices -AccessToken $token -All
+        $devices = Get-IntuneDevices -AccessToken <AccessToken> -All
         Get-IntuneDeviceOverview -Devices $devices
         
         Returns analyzed platform and compliance summaries.

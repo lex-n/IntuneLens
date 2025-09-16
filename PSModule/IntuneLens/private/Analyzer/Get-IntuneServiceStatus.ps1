@@ -1,17 +1,32 @@
 function Get-IntuneServiceStatus {
     <#
     .SYNOPSIS
-        
+        Generates an overview of Microsoft Intune service status (incidents, advisories, and action-required messages).
 
     .DESCRIPTION
-        
+        Get-IntuneServiceStatus analyzes Intune service health signals collected from Microsoft Graph and produces
+        a structured overview object. It accepts collections of incidents, advisories, and Message center items
+        and calculates summary counts.
 
     .PARAMETER Incidents
-        Array of incident objects as returned by Get-IntuneActiveIncidents.
+        A collection of Intune active incidents, obtained with Get-IntuneActiveIncidents.
+
+    .PARAMETER Advisories
+        A collection of Intune active advisories, obtained with Get-IntuneActiveAdvisories.
+
+    .PARAMETER Messages
+        A collection of Message center items for Intune service that require action, 
+        obtained with Get-IntuneActionRequiredMessages.
 
     .EXAMPLE
-        $incidents = Get-IntuneActiveIncidents -AccessToken <AccessToken>
-        Get-IntuneServiceStatus -Incidents $incidents
+        $inc = Get-IntuneActiveIncidents -AccessToken <AccessToken>
+        $adv = Get-IntuneActiveAdvisories -AccessToken <AccessToken>
+        $msg = Get-IntuneActionRequiredMessages -AccessToken <AccessToken>
+
+        $status = Get-IntuneServiceStatus -Incidents $inc -Advisories $adv -Messages $msg
+        $status.IntuneActiveIncidents.Total
+        $status.IntuneActiveAdvisories.Total
+        $status.IntuneActionRequiredMessages.Total
 
     .NOTES
         Author: Alex Nuryiev
@@ -20,40 +35,26 @@ function Get-IntuneServiceStatus {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param(
-        [Parameter()]
-        [AllowNull()]
-        [AllowEmptyCollection()]
-        [object[]]$Incidents = @()
+        [Parameter()][AllowNull()][AllowEmptyCollection()][object[]]$Incidents = @(),
+        [Parameter()][AllowNull()][AllowEmptyCollection()][object[]]$Advisories = @(),
+        [Parameter()][AllowNull()][AllowEmptyCollection()][object[]]$Messages = @()
     )
 
     if ($null -eq $Incidents) { $Incidents = @() }
-    if ($Incidents -isnot [System.Collections.IEnumerable]) { $Incidents = , $Incidents }
+    if ($null -eq $Advisories) { $Advisories = @() }
+    if ($null -eq $Messages) { $Messages = @() }
 
-    $IntuneActiveIncidents = Measure-IntuneActiveIncidents -Incidents $Incidents
-
-    [pscustomobject]@{
-        IntuneActiveIncidents = [pscustomobject]$IntuneActiveIncidents
+    $overview = [pscustomobject]@{
+        IntuneActiveIncidents        = [pscustomobject]@{
+            Total = $Incidents.Count
+        }
+        IntuneActiveAdvisories       = [pscustomobject]@{
+            Total = $Advisories.Count
+        }
+        IntuneActionRequiredMessages = [pscustomobject]@{
+            Total = $Messages.Count
+        }
     }
-}
 
-function Measure-IntuneActiveIncidents {
-    <#
-    .SYNOPSIS
-        Counts active Microsoft Intune incidents for the tenant.
-    #>
-
-    [CmdletBinding()]
-    [OutputType([pscustomobject])]
-    param(
-        [Parameter()]
-        [AllowNull()]
-        [AllowEmptyCollection()]
-        [object[]]$Incidents = @()
-    )
-
-    if ($null -eq $Incidents) { $Incidents = @() }
-
-    return [pscustomobject]@{
-        ActiveIncidents = $Incidents.Count
-    }
+    return $overview
 }

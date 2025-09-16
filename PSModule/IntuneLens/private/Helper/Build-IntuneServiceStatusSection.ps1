@@ -13,5 +13,11 @@ function Build-IntuneServiceStatusSection {
         [Parameter(Mandatory)][pscustomobject] $Overview
     )
 
-    New-IntuneLensSection -Title 'Intune Service Status' -Data $Overview.IntuneActiveIncidents
+    $Data = [pscustomobject]@{
+        ActiveIncidents        = $Overview.IntuneActiveIncidents.Total
+        ActiveAdvisories       = $Overview.IntuneActiveAdvisories.Total
+        ActionRequiredMessages = $Overview.IntuneActionRequiredMessages.Total
+    }
+
+    New-IntuneLensSection -Title 'Intune Service Status' -Data $Data
 }
