@@ -14,7 +14,7 @@ function Get-IntuneDeviceOverview {
         Array of device objects as returned by Get-IntuneDevices.
 
     .EXAMPLE
-        $devices = Get-IntuneDevices -AccessToken $token -All
+        $devices = Get-IntuneDevices -AccessToken <AccessToken> -All
         Get-IntuneDeviceOverview -Devices $devices
         
         Returns analyzed platform and compliance summaries.
@@ -26,48 +26,90 @@ function Get-IntuneDeviceOverview {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param(
-        [Parameter(Mandatory, ValueFromPipeline)]
-        [psobject[]] $Devices
+        [Parameter(Mandatory)][object[]] $Devices
     )
 
-    begin {
-        $buf = @()
-        $platforms = [ordered]@{ Windows = 0; Linux = 0; Android = 0; iOSiPadOS = 0; macOS = 0; WindowsMobile = 0; Other = 0; Total = 0 }
-        $compliance = [ordered]@{ Compliant = 0; InGracePeriod = 0; NotEvaluated = 0; NotCompliant = 0; Other = 0; Total = 0 }
+    $osDistribution = Get-IntuneDeviceOperatingSystemOverview -Devices $Devices
+    $complianceStatus = Get-IntuneDeviceComplianceOverview -Devices $Devices
+
+    [pscustomobject]@{
+        OperatingSystem = [pscustomobject]$osDistribution
+        Compliance      = [pscustomobject]$complianceStatus
+    }
+}
+
+function Get-IntuneDeviceOperatingSystemOverview {
+    <#
+    .SYNOPSIS
+        Calculates operating system distribution for managed devices.
+    #>
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory)][object[]] $Devices
+    )
+
+    $platforms = [ordered]@{
+        Windows       = 0
+        Linux         = 0
+        Android       = 0
+        iOSiPadOS     = 0
+        macOS         = 0
+        WindowsMobile = 0
+        Other         = 0
+        Total         = 0
     }
 
-    process { $buf += $Devices }
+    foreach ($d in ($Devices | Where-Object { $_ })) {
+        $os = [string]$d.operatingSystem
 
-    end {
-        foreach ($d in $buf) {
-            $os = [string]$d.operatingSystem
-
-            switch -Regex ($os) {
-                '^(?i)windows' { $platforms.Windows++ }
-                '^(?i)linux' { $platforms.Linux++ }
-                '^(?i)android' { $platforms.Android++ }
-                '^(?i)i(?:os|pados)' { $platforms.iOSiPadOS++ }
-                '^(?i)mac\s*os|^macos' { $platforms.macOS++ }
-                '^(?i)windows\s*(mobile|phone)' { $platforms.WindowsMobile++ }
-                default { $platforms.Other++ }
-            }
-            $platforms.Total++
-
-            $state = [string]$d.complianceState
-            switch -Regex ($state) {
-                '^(?i)compliant$' { $compliance.Compliant++ }
-                '^(?i)ingraceperiod$' { $compliance.InGracePeriod++ }
-                '^(?i)unknown$' { $compliance.NotEvaluated++ }
-                '^(?i)noncompliant$' { $compliance.NotCompliant++ }
-                default { $compliance.Other++ }
-            }
-            $compliance.Total++
+        switch -Regex ($os) {
+            '^(?i)windows' { $platforms.Windows++ }
+            '^(?i)linux' { $platforms.Linux++ }
+            '^(?i)android' { $platforms.Android++ }
+            '^(?i)i(?:os|pados)' { $platforms.iOSiPadOS++ }
+            '^(?i)mac\s*os|^macos' { $platforms.macOS++ }
+            '^(?i)windows\s*(mobile|phone)' { $platforms.WindowsMobile++ }
+            default { $platforms.Other++ }
         }
-
-        [pscustomobject]@{
-            CollectedAt = Get-Date
-            Platforms   = [pscustomobject]$platforms
-            Compliance  = [pscustomobject]$compliance
-        }
+        $platforms.Total++
     }
+
+    return [pscustomobject]$platforms
+}
+
+function Get-IntuneDeviceComplianceOverview {
+    <#
+    .SYNOPSIS
+        Calculates compliance state distribution for managed devices.
+    #>
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory)][object[]] $Devices
+    )
+
+    $compliance = [ordered]@{
+        Compliant     = 0
+        InGracePeriod = 0
+        NotEvaluated  = 0
+        NotCompliant  = 0
+        Other         = 0
+        Total         = 0
+    }
+
+    foreach ($d in ($Devices | Where-Object { $_ })) {
+        $state = [string]$d.complianceState
+
+        switch -Regex ($state) {
+            '^(?i)compliant$' { $compliance.Compliant++ }
+            '^(?i)ingraceperiod$' { $compliance.InGracePeriod++ }
+            '^(?i)unknown$' { $compliance.NotEvaluated++ }
+            '^(?i)noncompliant$' { $compliance.NotCompliant++ }
+            default { $compliance.Other++ }
+        }
+        $compliance.Total++
+    }
+
+    return [pscustomobject]$compliance
 }

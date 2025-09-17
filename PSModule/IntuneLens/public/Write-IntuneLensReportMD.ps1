@@ -30,6 +30,7 @@ function Write-IntuneLensReportMD {
     #>
 
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory)][string]  $Path,
         [Parameter(Mandatory)][IntuneLensReport] $Report,

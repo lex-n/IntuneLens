@@ -21,16 +21,19 @@ function Connect-IntuneLens {
 
     [CmdletBinding()]
     param(
-        [string]$ClientId = "0b99c4c0-d80b-4914-88f8-1c42f78320e6",
+        [string]$ClientId = "a499891a-49be-409d-bf9a-6d03a938ed43",
         [string[]]$Scopes = @(
             "DeviceManagementConfiguration.Read.All",
             "DeviceManagementManagedDevices.Read.All",
-            "Directory.Read.All"
+            "Directory.Read.All",
+            "ServiceHealth.Read.All",
+            "ServiceMessage.Read.All",
+            "DeviceManagementConfiguration.Read.All"
         )
     )
 
-    # Endpoints via 'common' (or replace with 'organizations' to filter out personal accounts)
-    $authBase = "https://login.microsoftonline.com/common/oauth2/v2.0"
+    # Endpoints via 'organizations' to filter out personal accounts
+    $authBase = "https://login.microsoftonline.com/organizations/oauth2/v2.0"
     $deviceCodeUrl = "$authBase/devicecode"
     $tokenUrl = "$authBase/token"
 

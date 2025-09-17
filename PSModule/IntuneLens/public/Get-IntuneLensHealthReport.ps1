@@ -58,21 +58,27 @@ function Get-IntuneLensHealthReport {
         }
     }
 
-
-    # Collect
     $devices = Get-IntuneDevices -AccessToken $AccessToken -Top $Top -All:$All
-
-    # Analyze
     $deviceOverview = Get-IntuneDeviceOverview -Devices $devices
+    $deviceOverviewSection = Build-IntuneDeviceOverviewSection -Overview $deviceOverview
 
-    # Wrap analyzed outputs into typed sections
-    $secOverview = New-IntuneLensSection -Title 'Device Overview' -Data $deviceOverview
+    $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
+    $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
+    $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
+    $intuneServiceStatus = Get-IntuneServiceStatus -Incidents $intuneActiveIncidents -Advisories $intuneActiveAdvisories -Messages $intuneActionRequiredMessages
+    $intuneServiceStatusSection = Build-IntuneServiceStatusSection -Overview $intuneServiceStatus
 
-    # Build the typed report
+    $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
+    $intuneConnectorStatus = Get-IntuneConnectorStatus -ApplePushNotificationCertificate $apns
+    $intuneConnectorStatusSection = Build-IntuneConnectorStatusSection -Overview $intuneConnectorStatus
+
+
     $report = [IntuneLensReport]::new()
     $report.CollectedAt = Get-Date
     $report.Sections = @(
-        $secOverview
+        $deviceOverviewSection,
+        $intuneServiceStatusSection,
+        $intuneConnectorStatusSection
     )
 
     return $report
