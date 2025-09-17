@@ -68,11 +68,17 @@ function Get-IntuneLensHealthReport {
     $intuneServiceStatus = Get-IntuneServiceStatus -Incidents $intuneActiveIncidents -Advisories $intuneActiveAdvisories -Messages $intuneActionRequiredMessages
     $intuneServiceStatusSection = Build-IntuneServiceStatusSection -Overview $intuneServiceStatus
 
+    $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
+    $intuneConnectorStatus = Get-IntuneConnectorStatus -ApplePushNotificationCertificate $apns
+    $intuneConnectorStatusSection = Build-IntuneConnectorStatusSection -Overview $intuneConnectorStatus
+
+
     $report = [IntuneLensReport]::new()
     $report.CollectedAt = Get-Date
     $report.Sections = @(
         $deviceOverviewSection,
-        $intuneServiceStatusSection
+        $intuneServiceStatusSection,
+        $intuneConnectorStatusSection
     )
 
     return $report
