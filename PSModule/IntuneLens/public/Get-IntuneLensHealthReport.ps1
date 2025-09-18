@@ -69,7 +69,8 @@ function Get-IntuneLensHealthReport {
     $intuneServiceStatusSection = Build-IntuneServiceStatusSection -Overview $intuneServiceStatus
 
     $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
-    $intuneConnectorStatus = Get-IntuneConnectorStatus -ApplePushNotificationCertificate $apns
+    $vpp = Get-VppTokens -AccessToken $AccessToken
+    $intuneConnectorStatus = Get-IntuneConnectorStatus -ApplePushNotificationCertificate $apns -VppTokens $vpp
     $intuneConnectorStatusSection = Build-IntuneConnectorStatusSection -Overview $intuneConnectorStatus
 
 
