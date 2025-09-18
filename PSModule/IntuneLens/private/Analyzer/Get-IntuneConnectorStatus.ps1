@@ -33,7 +33,7 @@ function Get-IntuneConnectorStatus {
         VPPLastSyncDates = $null
     }
 
-    if ($ApplePushNotificationCertificate.IsConfigured -and $ApplePushNotificationCertificate.ExpirationDateTime) {
+    if ($ApplePushNotificationCertificate.ExpirationDateTime) {
         $overview.APNSExpiryDate = $ApplePushNotificationCertificate.ExpirationDateTime
     }
     else {
