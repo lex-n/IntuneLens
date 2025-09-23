@@ -5,15 +5,11 @@ function Get-IntuneLensHealthReport {
 
     .DESCRIPTION
         Get-IntuneLensHealthReport orchestrates collection and analysis to produce a typed
-        [IntuneLensReport] object. It can authenticate on your behalf using -ClientId (device-code flow)
-        or reuse an existing -AccessToken. The report contains one or more sections (IntuneLensSection),
+        [IntuneLensReport] object. The report contains one or more sections (IntuneLensSection),
         each holding analyzed, human-centric data (not raw Graph payloads).
 
     .PARAMETER AccessToken
-        A bearer token to Microsoft Graph. If provided, -ClientId is not required.
-
-    .PARAMETER ClientId
-        Application (client) ID for interactive device-code auth. Required if -AccessToken is not supplied.
+        Bearer token for Microsoft Graph.
 
     .PARAMETER All
         Fetch all pages from Graph endpoints used during the run (where supported).
@@ -23,8 +19,7 @@ function Get-IntuneLensHealthReport {
 
     .EXAMPLE
         $report = Get-IntuneLensHealthReport
-        Runs interactive device-code sign-in and returns an [IntuneLensReport].
-
+    
     .NOTES
         Author: Alex Nuryiev
     #>

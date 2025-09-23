@@ -37,7 +37,7 @@ function Get-MobileThreatDefenseConnectors {
 
         $thirdParty = $items | Where-Object { -not $_.microsoftDefenderForEndpointAttachEnabled }
 
-        if ($thirdParty.Count -eq 0) {
+        if (@($thirdParty).Count -eq 0) {
             return @()
         }
 
