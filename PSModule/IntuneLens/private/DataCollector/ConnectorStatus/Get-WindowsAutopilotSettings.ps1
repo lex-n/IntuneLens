@@ -49,10 +49,7 @@ function Get-WindowsAutopilotSettings {
         catch { }
 
         if ($statusCode -eq 404 -or $statusCode -eq 400) {
-            return [pscustomobject]@{
-                lastSyncDateTime = $null
-                syncStatus       = $null
-            }
+            return @()
         }
 
         throw

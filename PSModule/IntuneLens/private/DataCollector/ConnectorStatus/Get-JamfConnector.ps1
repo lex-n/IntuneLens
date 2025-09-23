@@ -42,10 +42,7 @@ function Get-JamfConnector {
         $jamf = $partners | Where-Object { $_.displayName -match '(?i)Jamf' } | Select-Object -First 1
 
         if (-not $jamf -or -not $jamf.isConfigured) {
-            return [pscustomobject]@{
-                lastHeartbeatDateTime = $null
-                partnerState          = $null
-            }
+            return @()
         }
 
         $lastHeartbeat = $null

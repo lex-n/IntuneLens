@@ -38,11 +38,7 @@ function Get-MicrosoftDefenderForEndpointConnector {
         $mde = $items | Where-Object { $_.microsoftDefenderForEndpointAttachEnabled -eq $true } | Select-Object -First 1
 
         if (-not $mde) {
-            return [pscustomobject]@{
-                id                    = $null
-                lastHeartbeatDateTime = $null
-                partnerState          = $null
-            }
+            return @()
         }
 
         return [pscustomobject]@{

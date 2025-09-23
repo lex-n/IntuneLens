@@ -6,8 +6,13 @@ function Show-Section {
 
     Write-Host ("## " + $Title)
 
+    $paddingWidth = ($Data.PSObject.Properties.Name | Measure-Object -Property Length -Maximum).Maximum
+    if (-not $paddingWidth -or $paddingWidth -lt 25) { $paddingWidth = 25 }
+
+    $formatString = "{0,-$paddingWidth} : {1}"
+
     foreach ($prop in $Data.PSObject.Properties) {
-        Write-Host ("{0,-25} : {1}" -f $prop.Name, $prop.Value)
+        Write-Host ($formatString -f $prop.Name, $prop.Value)
     }
 
     Write-Host ""
@@ -20,7 +25,7 @@ function Get-IntuneLensHealthOverview {
 
     .DESCRIPTION
         Get-IntuneLensHealthOverview orchestrates the collection and analysis of data, 
-        and renders the report to console in a human-friendly format. 
+        and renders the Intune Health Overview report to console in a human-friendly format.
 
     .PARAMETER AccessToken
         Bearer token for Microsoft Graph.
@@ -33,7 +38,6 @@ function Get-IntuneLensHealthOverview {
     #>
     
     [CmdletBinding()]
-    [OutputType('IntuneLensReport')]
     param(
         [string] $AccessToken
     )
@@ -73,11 +77,6 @@ function Get-IntuneLensHealthOverview {
         }
         [pscustomobject]$o
     }
-    else {
-        [pscustomobject][ordered]@{
-            "Connectors Enabled" = 0
-        }
-    }
 
 
     $ApplePushNotificationCertificate = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
@@ -91,15 +90,15 @@ function Get-IntuneLensHealthOverview {
     $JamfConnector = Get-JamfConnector -AccessToken $AccessToken
 
     $connectorInputs = [ordered]@{
-        'Apple Push Notification Certificate'       = $ApplePushNotificationCertificate
-        'Apple VPP'                                 = $VppTokens
-        'Apple DEP'                                 = $DepTokens
-        'Managed Google Play'                       = $ManagedGooglePlaySettings
-        'Windows Autopilot'                         = $WindowsAutopilotSettings
-        'NDES Connectors'                           = $NdesConnectors
-        'Mobile Threat Defense Connectors'          = $MobileThreatDefenseConnectors
-        'Microsoft Defender for Endpoint Connector' = $MicrosoftDefenderForEndpointConnector
-        'JAMF'                                      = $JamfConnector
+        'Apple Push Notification Certificate'              = $ApplePushNotificationCertificate
+        'Apple VPP'                                        = $VppTokens
+        'Apple DEP'                                        = $DepTokens
+        'Managed Google Play'                              = $ManagedGooglePlaySettings
+        'Windows Autopilot'                                = $WindowsAutopilotSettings
+        'NDES Connectors'                                  = $NdesConnectors
+        'Mobile Threat Defense Connectors (non-Microsoft)' = $MobileThreatDefenseConnectors
+        'Microsoft Defender for Endpoint Connector'        = $MicrosoftDefenderForEndpointConnector
+        'JAMF'                                             = $JamfConnector
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -110,14 +109,28 @@ function Get-IntuneLensHealthOverview {
         }
     }
 
+    $combinedConnectorStatus = [ordered]@{}
+
+    if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
+        foreach ($p in $connectorStatusSection.PSObject.Properties) {
+            $combinedConnectorStatus[$p.Name] = $p.Value
+        }
+    }
+
+    if ($null -ne $connectorsNotEnabled -and $connectorsNotEnabled.Count -gt 0) {
+        foreach ($name in $connectorsNotEnabled.Keys) {
+            $combinedConnectorStatus[$name] = $connectorsNotEnabled[$name]
+        }
+    }
+
+
     $report = [ordered]@{
         "Service health and message center" = [pscustomobject][ordered]@{
             "Active Incidents"         = @($intuneActiveIncidents).Count
             "Active Advisories"        = @($intuneActiveAdvisories).Count
             "Action Required Messages" = @($intuneActionRequiredMessages).Count
         }
-        "Connector Status"                  = $connectorStatusSection
-        "Connectors (Not Enabled)"          = [pscustomobject]$connectorsNotEnabled
+        "Connector Status"                  = [pscustomobject]$combinedConnectorStatus
     }
 
     Write-Host ""

@@ -53,9 +53,7 @@ function Get-ApplePushNotificationCertificate {
         catch { }
 
         if ($statusCode -eq 404) {
-            return [pscustomobject]@{
-                expirationDateTime = $null
-            }
+            return @()
         }
 
         throw
