@@ -39,7 +39,7 @@ function Get-ApplePushNotificationCertificate {
             $expirationDateTime = [datetime]$resp.expirationDateTime
         }
 
-        [pscustomobject]@{
+        return [pscustomobject]@{
             expirationDateTime = $expirationDateTime
         }
     }
