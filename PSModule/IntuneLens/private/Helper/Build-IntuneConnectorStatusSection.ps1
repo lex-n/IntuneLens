@@ -16,6 +16,8 @@ function Build-IntuneConnectorStatusSection {
 
     $Data = [pscustomobject]@{
         APNSExpiryDate = $Overview.APNSExpiryDate
+        VPPExpiryDates = $Overview.VPPExpiryDates
+        VPPLastSyncDates = $Overview.VPPLastSyncDates
     }
 
     New-IntuneLensSection -Title 'Intune Connector Status' -Data $Data

@@ -1,18 +1,18 @@
-function Get-ApplePushNotificationCertificate {
+function Get-WindowsAutopilotSettings {
     <#
     .SYNOPSIS
-        Gets the Apple Push Notification (APNs) certificate.
+        Gets Windows Autopilot settings info.
 
     .DESCRIPTION
-        Calls the Microsoft Graph endpoint /deviceManagement/applePushNotificationCertificate
-        to get an Apple MDM push certificate required to manage iOS/iPadOS and macOS devices in Microsoft Intune.
+        Calls the Microsoft Graph endpoint /deviceManagement/windowsAutopilotSettings
+        to get Windows Autopilot settings.
         Intended for use by analyzers, not for direct export.
 
     .PARAMETER AccessToken
         Bearer token for Microsoft Graph (required).
 
     .EXAMPLE
-        Get-ApplePushNotificationCertificate -AccessToken <AccessToken>
+        Get-WindowsAutopilotSettings -AccessToken <AccessToken>
 
     .NOTES
         Author: Alex Nuryiev
@@ -26,21 +26,17 @@ function Get-ApplePushNotificationCertificate {
     )
 
     $base = "https://graph.microsoft.com/beta"
-    $endpoint = "$base/deviceManagement/applePushNotificationCertificate"
+    $endpoint = "$base/deviceManagement/windowsAutopilotSettings"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=expirationDateTime"
+    $url = "$endpoint`?`$select=lastSyncDateTime,syncStatus"
 
     try {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
-        $expirationDateTime = $null
-        if ($resp.PSObject.Properties.Name -contains 'expirationDateTime' -and $resp.expirationDateTime) {
-            $expirationDateTime = [datetime]$resp.expirationDateTime
-        }
-
         return [pscustomobject]@{
-            expirationDateTime = $expirationDateTime
+            lastSyncDateTime = if ($resp.lastSyncDateTime) { [datetime]$resp.lastSyncDateTime } else { $null }
+            syncStatus       = if ($resp.syncStatus) { [string]$resp.syncStatus }         else { $null }
         }
     }
     catch {
@@ -52,7 +48,7 @@ function Get-ApplePushNotificationCertificate {
         }
         catch { }
 
-        if ($statusCode -eq 404) {
+        if ($statusCode -eq 404 -or $statusCode -eq 400) {
             return @()
         }
 

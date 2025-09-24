@@ -38,7 +38,7 @@ function Get-IntuneDevices {
     $endpoint = "$base/deviceManagement/managedDevices"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=id,deviceName,operatingSystem,complianceState,azureADDeviceId,userPrincipalName,lastSyncDateTime&`$top=$Top"
+    $url = "$endpoint`?`$select=id,deviceName,operatingSystem,complianceState,userPrincipalName,lastSyncDateTime&`$top=$Top"
 
     $acc = @()
     do {
