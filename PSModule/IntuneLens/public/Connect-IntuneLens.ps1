@@ -28,7 +28,8 @@ function Connect-IntuneLens {
             "Directory.Read.All",
             "ServiceHealth.Read.All",
             "ServiceMessage.Read.All",
-            "DeviceManagementConfiguration.Read.All"
+            "DeviceManagementConfiguration.Read.All",
+            "Reports.Read.All"
         )
     )
 

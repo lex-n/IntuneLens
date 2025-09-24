@@ -63,6 +63,12 @@ function Get-IntuneLensHealthOverview {
         }
     }
 
+    $organization = Get-EntraIdOrganization -AccessToken $AccessToken
+    $defaultDomain = Get-EntraIdDefaultDomain -AccessToken $AccessToken
+
+    $entraIdPremiumLicenseInsight = Get-EntraIdPremiumLicenseInsight -AccessToken $AccessToken
+    $entraIdLicense = Get-EntraIdLicense -Insight $entraIdPremiumLicenseInsight
+
     $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
     $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
@@ -125,12 +131,26 @@ function Get-IntuneLensHealthOverview {
 
 
     $report = [ordered]@{
-        "Service health and message center" = [pscustomobject][ordered]@{
-            "Active Incidents"         = @($intuneActiveIncidents).Count
-            "Active Advisories"        = @($intuneActiveAdvisories).Count
-            "Action Required Messages" = @($intuneActionRequiredMessages).Count
+        "Basic information"                 = [pscustomobject][ordered]@{
+            "Organization name" = $organization.displayName
+            "Default domain"    = $defaultDomain.id
+            "License"           = $entraIdLicense
         }
-        "Connector Status"                  = [pscustomobject]$combinedConnectorStatus
+        "Entra ID licenses"                 = [pscustomobject][ordered]@{
+            "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
+            "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
+            "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
+            "P1 conditional access usage (members)"            = $entraIdPremiumLicenseInsight.p1ConditionalAccessUsers
+            "P1 conditional access usage (guests)"             = $entraIdPremiumLicenseInsight.p1ConditionalAccessGuestUsers
+            "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
+            "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
+        }
+        "Service health and message center" = [pscustomobject][ordered]@{
+            "Active incidents"         = @($intuneActiveIncidents).Count
+            "Active advisories"        = @($intuneActiveAdvisories).Count
+            "Action required messages" = @($intuneActionRequiredMessages).Count
+        }
+        "Connector status"                  = [pscustomobject]$combinedConnectorStatus
     }
 
     Write-Host ""
