@@ -42,7 +42,7 @@ function Get-VppTokens {
             [pscustomobject]@{
                 id                 = $t.id
                 expirationDateTime = if ($t.expirationDateTime) { [datetime]$t.expirationDateTime } else { $null }
-                lastSyncDateTime   = if ($t.lastSyncDateTime) { [datetime]$t.lastSyncDateTime }   else { $null }
+                lastSyncDateTime   = if ($t.lastSyncDateTime) { [datetime]$t.lastSyncDateTime } else { $null }
             }
         }
 

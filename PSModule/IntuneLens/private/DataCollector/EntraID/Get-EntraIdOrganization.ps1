@@ -20,7 +20,7 @@ function Get-EntraIdOrganization {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string] $AccessToken
     )
 
@@ -28,7 +28,7 @@ function Get-EntraIdOrganization {
     $endpoint = "$base/organization"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=id,displayName"
+    $url = "$endpoint`?`$select=id,displayName,tenantType,onPremisesSyncEnabled"
 
     $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers
 
@@ -39,8 +39,10 @@ function Get-EntraIdOrganization {
     }
 
     $result = [pscustomobject]@{
-        id          = $org.id
-        displayName = $org.displayName
+        id                    = $org.id
+        displayName           = $org.displayName
+        tenantType            = $org.tenantType
+        onPremisesSyncEnabled = $org.onPremisesSyncEnabled
     }
 
     return $result

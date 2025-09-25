@@ -36,7 +36,7 @@ function Get-WindowsAutopilotSettings {
 
         return [pscustomobject]@{
             lastSyncDateTime = if ($resp.lastSyncDateTime) { [datetime]$resp.lastSyncDateTime } else { $null }
-            syncStatus       = if ($resp.syncStatus) { [string]$resp.syncStatus }         else { $null }
+            syncStatus       = if ($resp.syncStatus) { [string]$resp.syncStatus } else { $null }
         }
     }
     catch {

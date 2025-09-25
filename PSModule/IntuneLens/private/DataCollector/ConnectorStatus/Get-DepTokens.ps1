@@ -41,7 +41,7 @@ function Get-DepTokens {
         $items = foreach ($d in $resp.value) {
             [pscustomobject]@{
                 id                         = $d.id
-                tokenExpirationDateTime    = if ($d.tokenExpirationDateTime) { [datetime]$d.tokenExpirationDateTime }   else { $null }
+                tokenExpirationDateTime    = if ($d.tokenExpirationDateTime) { [datetime]$d.tokenExpirationDateTime } else { $null }
                 lastSuccessfulSyncDateTime = if ($d.lastSuccessfulSyncDateTime) { [datetime]$d.lastSuccessfulSyncDateTime } else { $null }
                 lastSyncErrorCode          = $d.lastSyncErrorCode
             }

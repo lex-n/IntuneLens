@@ -21,7 +21,7 @@ function Get-EntraIdLicenseLevel {
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [pscustomobject] $Insight
     )
 

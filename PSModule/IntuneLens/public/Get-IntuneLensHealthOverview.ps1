@@ -4,7 +4,7 @@ function Show-Section {
         [pscustomobject] $Data
     )
 
-    Write-Host ("## " + $Title)
+    Write-Host ("### " + $Title) -ForegroundColor DarkGray
 
     $paddingWidth = ($Data.PSObject.Properties.Name | Measure-Object -Property Length -Maximum).Maximum
     if (-not $paddingWidth -or $paddingWidth -lt 25) { $paddingWidth = 25 }
@@ -74,6 +74,9 @@ function Get-IntuneLensHealthOverview {
     $entraIdApplicationsCount = Get-EntraIdApplicationsCount -AccessToken $AccessToken
     $entraIdDevicesCount = Get-EntraIdDevicesCount -AccessToken $AccessToken
 
+    $microsoftEntraConnectStatus = Get-EntraIdMicrosoftEntraConnectStatus -Organization $organization
+    $companyBrandingConfigStatus = Get-EntraIdBrandingConfigStatus -AccessToken $AccessToken -OrganizationId $organization.id
+
     $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
     $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
@@ -135,17 +138,20 @@ function Get-IntuneLensHealthOverview {
     }
 
 
-    $report = [ordered]@{
-        "Basic information"                 = [pscustomobject][ordered]@{
-            "Organization name" = $organization.displayName
-            "Default domain"    = $defaultDomain.id
-            "Tenant level"      = $entraIdLicenseLevel
-            "Users"             = $entraIdUsersCount
-            "Groups"            = $entraIdGroupsCount
-            "Applications"      = $entraIdApplicationsCount
-            "Devices"           = $entraIdDevicesCount
+    $EntraIdReport = [ordered]@{
+        "Basic information" = [pscustomobject][ordered]@{
+            "Organization name"       = $organization.displayName
+            "Default domain"          = $defaultDomain.id
+            "Tenant type"             = $organization.tenantType
+            "Tenant level"            = $entraIdLicenseLevel
+            "Users"                   = $entraIdUsersCount
+            "Groups"                  = $entraIdGroupsCount
+            "Applications"            = $entraIdApplicationsCount
+            "Devices"                 = $entraIdDevicesCount
+            "Microsoft Entra Connect" = $microsoftEntraConnectStatus
+            "Company branding"        = $companyBrandingConfigStatus
         }
-        "Entra ID licenses"                 = [pscustomobject][ordered]@{
+        "Entra ID licenses" = [pscustomobject][ordered]@{
             "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
             "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
             "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
@@ -154,6 +160,9 @@ function Get-IntuneLensHealthOverview {
             "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
             "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
         }
+    }
+
+    $IntuneReport = [ordered]@{
         "Service health and message center" = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
             "Active advisories"        = @($intuneActiveAdvisories).Count
@@ -163,10 +172,17 @@ function Get-IntuneLensHealthOverview {
     }
 
     Write-Host ""
-    Write-Host "# IntuneLens - Intune Health Overview"
+    Write-Host "# IntuneLens - Intune Health Overview" -ForegroundColor DarkYellow
+
+    Write-Host "## Entra ID Overview" -ForegroundColor DarkGreen
+    foreach ($sectionName in $EntraIdReport.Keys) {
+        Show-Section -Title $sectionName -Data $EntraIdReport[$sectionName]
+    }
     Write-Host ""
 
-    foreach ($sectionName in $report.Keys) {
-        Show-Section -Title $sectionName -Data $report[$sectionName]
+    Write-Host "## Intune Overview" -ForegroundColor DarkGreen
+    foreach ($sectionName in $IntuneReport.Keys) {
+        Show-Section -Title $sectionName -Data $IntuneReport[$sectionName]
     }
+    Write-Host ""
 }

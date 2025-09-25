@@ -20,7 +20,7 @@ function Get-EntraIdDevicesCount {
     [CmdletBinding()]
     [OutputType([int])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string] $AccessToken
     )
 

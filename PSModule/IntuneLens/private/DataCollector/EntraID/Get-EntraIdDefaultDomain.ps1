@@ -20,7 +20,7 @@ function Get-EntraIdDefaultDomain {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string] $AccessToken
     )
 

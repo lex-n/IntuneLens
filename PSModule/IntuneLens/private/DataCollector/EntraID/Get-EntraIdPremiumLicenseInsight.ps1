@@ -21,7 +21,7 @@ function Get-EntraIdPremiumLicenseInsight {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string] $AccessToken
     )
 
