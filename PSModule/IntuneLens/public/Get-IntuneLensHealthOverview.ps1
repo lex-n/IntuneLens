@@ -30,8 +30,18 @@ function Get-IntuneLensHealthOverview {
     .PARAMETER AccessToken
         Bearer token for Microsoft Graph.
 
+    .PARAMETER Protected
+        Optional switch. If specified, sensitive tenant information such as
+        "Organization name" and "Default domain" are masked in the report
+        and displayed as "Protected".
+        Other fields remain unchanged.
+
     .EXAMPLE
         Get-IntuneLensHealthOverview
+        Displays the full health overview report with all details visible.
+
+        Get-IntuneLensHealthOverview -Protected
+        Displays the health overview report, but masks sensitive tenant information.
     
     .NOTES
         Author: Alex Nuryiev
@@ -39,7 +49,8 @@ function Get-IntuneLensHealthOverview {
     
     [CmdletBinding()]
     param(
-        [string] $AccessToken
+        [string] $AccessToken,
+        [switch] $Protected
     )
 
     Set-StrictMode -Version Latest
@@ -65,6 +76,8 @@ function Get-IntuneLensHealthOverview {
 
     $organization = Get-EntraIdOrganization -AccessToken $AccessToken
     $defaultDomain = Get-EntraIdDefaultDomain -AccessToken $AccessToken
+    $orgName = if ($Protected) { 'Protected' } else { $organization.displayName }
+    $defDomain = if ($Protected) { 'Protected' } else { $defaultDomain.id }
 
     $entraIdPremiumLicenseInsight = Get-EntraIdPremiumLicenseInsight -AccessToken $AccessToken
     $entraIdLicenseLevel = Get-EntraIdLicenseLevel -Insight $entraIdPremiumLicenseInsight
@@ -140,8 +153,8 @@ function Get-IntuneLensHealthOverview {
 
     $EntraIdReport = [ordered]@{
         "Basic information" = [pscustomobject][ordered]@{
-            "Organization name"       = $organization.displayName
-            "Default domain"          = $defaultDomain.id
+            "Organization name"       = $orgName
+            "Default domain"          = $defDomain
             "Tenant type"             = $organization.tenantType
             "Tenant level"            = $entraIdLicenseLevel
             "Users"                   = $entraIdUsersCount
