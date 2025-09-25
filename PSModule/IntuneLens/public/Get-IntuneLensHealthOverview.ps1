@@ -67,7 +67,12 @@ function Get-IntuneLensHealthOverview {
     $defaultDomain = Get-EntraIdDefaultDomain -AccessToken $AccessToken
 
     $entraIdPremiumLicenseInsight = Get-EntraIdPremiumLicenseInsight -AccessToken $AccessToken
-    $entraIdLicense = Get-EntraIdLicense -Insight $entraIdPremiumLicenseInsight
+    $entraIdLicenseLevel = Get-EntraIdLicenseLevel -Insight $entraIdPremiumLicenseInsight
+
+    $entraIdUsersCount = Get-EntraIdUsersCount -AccessToken $AccessToken
+    $entraIdGroupsCount = Get-EntraIdGroupsCount -AccessToken $AccessToken
+    $entraIdApplicationsCount = Get-EntraIdApplicationsCount -AccessToken $AccessToken
+    $entraIdDevicesCount = Get-EntraIdDevicesCount -AccessToken $AccessToken
 
     $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
@@ -134,7 +139,11 @@ function Get-IntuneLensHealthOverview {
         "Basic information"                 = [pscustomobject][ordered]@{
             "Organization name" = $organization.displayName
             "Default domain"    = $defaultDomain.id
-            "License"           = $entraIdLicense
+            "Tenant level"      = $entraIdLicenseLevel
+            "Users"             = $entraIdUsersCount
+            "Groups"            = $entraIdGroupsCount
+            "Applications"      = $entraIdApplicationsCount
+            "Devices"           = $entraIdDevicesCount
         }
         "Entra ID licenses"                 = [pscustomobject][ordered]@{
             "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount

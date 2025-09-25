@@ -1,20 +1,18 @@
-function Get-EntraIdLicense {
+function Get-EntraIdLicenseLevel {
     <#
     .SYNOPSIS
         Gets the Entra ID license level from license insight.
 
     .DESCRIPTION
         Evaluates the entitlement counts returned by Get-EntraIdPremiumLicenseInsight
-        and determines the Entra ID license level for the tenant.
+        and determines the Entra ID license level (Free, P1, or P2) for the tenant.
             
     .PARAMETER Insight
         The object returned by Get-EntraIdPremiumLicenseInsight.
 
     .EXAMPLE
         $insight = Get-EntraIdPremiumLicenseInsight -AccessToken <AccessToken>
-        $license = Get-EntraIdLicense -Insight $insight
-        $license
-        Returns 'Microsoft Entra ID P2' or 'Microsoft Entra ID P1' or 'Microsoft Entra ID Free'
+        $licenseLevel = Get-EntraIdLicenseLevel -Insight $insight
 
     .NOTES
         Author: Alex Nuryiev
