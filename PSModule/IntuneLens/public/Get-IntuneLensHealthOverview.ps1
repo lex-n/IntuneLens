@@ -90,10 +90,17 @@ function Get-IntuneLensHealthOverview {
     $microsoftEntraConnectStatus = Get-EntraIdMicrosoftEntraConnectStatus -Organization $organization
     $companyBrandingConfigStatus = Get-EntraIdBrandingConfigStatus -AccessToken $AccessToken -OrganizationId $organization.id
 
+    $mdmPolicies = Get-EntraIdMdmPolicies -AccessToken $AccessToken
+    $mamPolicies = Get-EntraIdMamPolicies -AccessToken $AccessToken
+    $mobilitySummary = Get-EntraIdMobility -MdmPolicy $mdmPolicies -MamPolicy $mamPolicies
+
+    $securityDefaultsPolicy = Get-EntraIdSecurityDefaultsPolicy -AccessToken $AccessToken
+
+    $mdmAuthority = Get-MdmAuthority -AccessToken $AccessToken -OrganizationId $organization.id
+
     $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
     $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
-
 
     $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
     $connectorStatusSection =
@@ -104,7 +111,6 @@ function Get-IntuneLensHealthOverview {
         }
         [pscustomobject]$o
     }
-
 
     $ApplePushNotificationCertificate = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
     $VppTokens = Get-VppTokens -AccessToken $AccessToken
@@ -152,7 +158,7 @@ function Get-IntuneLensHealthOverview {
 
 
     $EntraIdReport = [ordered]@{
-        "Basic information" = [pscustomobject][ordered]@{
+        "Basic information"      = [pscustomobject][ordered]@{
             "Organization name"       = $orgName
             "Default domain"          = $defDomain
             "Tenant type"             = $organization.tenantType
@@ -163,8 +169,9 @@ function Get-IntuneLensHealthOverview {
             "Devices"                 = $entraIdDevicesCount
             "Microsoft Entra Connect" = $microsoftEntraConnectStatus
             "Company branding"        = $companyBrandingConfigStatus
+            "Security defaults"       = if ($securityDefaultsPolicy.isEnabled) { "Enabled" } else { "Not Enabled" }
         }
-        "Entra ID licenses" = [pscustomobject][ordered]@{
+        "Entra ID licenses"      = [pscustomobject][ordered]@{
             "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
             "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
             "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
@@ -173,9 +180,17 @@ function Get-IntuneLensHealthOverview {
             "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
             "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
         }
+        "Mobility (MDM and WIP)" = [pscustomobject][ordered]@{
+            "Microsoft Intune" = if ($mobilitySummary.hasMicrosoftIntune) { "Yes" } else { "No" }
+            "MDM applies to"   = $mobilitySummary.mdmAppliesTo
+            "WIP applies to"   = $mobilitySummary.mamAppliesTo
+        }
     }
 
     $IntuneReport = [ordered]@{
+        "Basic information"                 = [pscustomobject][ordered]@{
+            "MDM authority" = $mdmAuthority
+        }
         "Service health and message center" = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
             "Active advisories"        = @($intuneActiveAdvisories).Count

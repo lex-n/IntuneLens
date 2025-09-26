@@ -30,7 +30,7 @@ function Get-EntraIdDefaultDomain {
 
     $url = "$endpoint`?`$select=id,isDefault"
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers
+    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
     $default = $resp.value | Where-Object { $_.isDefault -eq $true } | Select-Object -First 1
 

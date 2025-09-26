@@ -30,7 +30,7 @@ function Get-EntraIdOrganization {
 
     $url = "$endpoint`?`$select=id,displayName,tenantType,onPremisesSyncEnabled"
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers
+    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
     $org = $resp.value | Select-Object -First 1
 

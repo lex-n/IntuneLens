@@ -34,6 +34,6 @@ function Get-EntraIdGroupsCount {
 
     $url = "$endpoint`$count"
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers
+    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
     return [int]$resp
 }

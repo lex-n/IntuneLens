@@ -31,7 +31,7 @@ function Get-EntraIdPremiumLicenseInsight {
 
     $url = $endpoint
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers
+    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
     return [pscustomobject]@{
         entitledP1LicenseCount                 = $resp.entitledP1LicenseCount
