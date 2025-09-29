@@ -28,7 +28,7 @@ function Get-EntraIdOrganization {
     $endpoint = "$base/organization"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=id,displayName,tenantType,onPremisesSyncEnabled"
+    $url = "$endpoint`?`$select=id,displayName,tenantType,onPremisesSyncEnabled,createdDateTime"
 
     $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
@@ -38,12 +38,11 @@ function Get-EntraIdOrganization {
         return $null
     }
 
-    $result = [pscustomobject]@{
+    return [pscustomobject]@{
         id                    = $org.id
         displayName           = $org.displayName
         tenantType            = $org.tenantType
         onPremisesSyncEnabled = $org.onPremisesSyncEnabled
+        createdDateTime       = [datetime]$org.createdDateTime
     }
-
-    return $result
 }

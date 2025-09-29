@@ -78,6 +78,7 @@ function Get-IntuneLensHealthOverview {
     $defaultDomain = Get-EntraIdDefaultDomain -AccessToken $AccessToken
     $orgName = if ($Protected) { 'Protected' } else { $organization.displayName }
     $defDomain = if ($Protected) { 'Protected' } else { $defaultDomain.id }
+    $orgCreatedDateTime = if ($Protected) { 'Protected' } else { $organization.createdDateTime }
 
     $entraIdPremiumLicenseInsight = Get-EntraIdPremiumLicenseInsight -AccessToken $AccessToken
     $entraIdLicenseLevel = Get-EntraIdLicenseLevel -Insight $entraIdPremiumLicenseInsight
@@ -97,6 +98,8 @@ function Get-IntuneLensHealthOverview {
     $securityDefaultsPolicy = Get-EntraIdSecurityDefaultsPolicy -AccessToken $AccessToken
 
     $mdmAuthority = Get-MdmAuthority -AccessToken $AccessToken -OrganizationId $organization.id
+    $intuneSubscriptionState = Get-IntuneSubscriptionState -AccessToken $AccessToken
+    $managedDeviceOverview = Get-ManagedDeviceOverview -AccessToken $AccessToken
 
     $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
@@ -161,6 +164,7 @@ function Get-IntuneLensHealthOverview {
         "Basic information"      = [pscustomobject][ordered]@{
             "Organization name"       = $orgName
             "Default domain"          = $defDomain
+            "Tenant created"          = $orgCreatedDateTime
             "Tenant type"             = $organization.tenantType
             "Tenant level"            = $entraIdLicenseLevel
             "Users"                   = $entraIdUsersCount
@@ -189,7 +193,11 @@ function Get-IntuneLensHealthOverview {
 
     $IntuneReport = [ordered]@{
         "Basic information"                 = [pscustomobject][ordered]@{
-            "MDM authority" = $mdmAuthority
+            "MDM authority"          = $mdmAuthority
+            "Subscription state"     = $intuneSubscriptionState.subscriptionState
+            "Total enrolled devices" = $managedDeviceOverview.enrolledDeviceCount
+            "MDM enrolled devices"   = $managedDeviceOverview.mdmEnrolledCount
+            "Co-managed devices"     = $managedDeviceOverview.dualEnrolledDeviceCount
         }
         "Service health and message center" = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
