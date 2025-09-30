@@ -32,8 +32,8 @@ function Get-IntuneLensHealthOverview {
 
     .PARAMETER Protected
         Optional switch. If specified, sensitive tenant information such as
-        "Organization name" and "Default domain" are masked in the report
-        and displayed as "Protected".
+        "Organization name", "Default domain", "Tenant creation datetime"
+        are masked in the report and displayed as "Protected".
         Other fields remain unchanged.
 
     .EXAMPLE
@@ -101,6 +101,9 @@ function Get-IntuneLensHealthOverview {
     $intuneSubscriptionState = Get-IntuneSubscriptionState -AccessToken $AccessToken
     $managedDeviceOverview = Get-ManagedDeviceOverview -AccessToken $AccessToken
 
+    $deviceManagementSettings = Get-DeviceManagementSettings -AccessToken $AccessToken
+    $compliancePolicySettings = Get-IntuneCompliancePolicySettings -DeviceManagementSettings $deviceManagementSettings
+
     $intuneActiveIncidents = Get-IntuneActiveIncidents -AccessToken $AccessToken
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
     $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
@@ -164,7 +167,7 @@ function Get-IntuneLensHealthOverview {
         "Basic information"      = [pscustomobject][ordered]@{
             "Organization name"       = $orgName
             "Default domain"          = $defDomain
-            "Tenant created"          = $orgCreatedDateTime
+            "Tenant created at"       = $orgCreatedDateTime
             "Tenant type"             = $organization.tenantType
             "Tenant level"            = $entraIdLicenseLevel
             "Users"                   = $entraIdUsersCount
@@ -193,11 +196,12 @@ function Get-IntuneLensHealthOverview {
 
     $IntuneReport = [ordered]@{
         "Basic information"                 = [pscustomobject][ordered]@{
-            "MDM authority"          = $mdmAuthority
-            "Subscription state"     = $intuneSubscriptionState.subscriptionState
-            "Total enrolled devices" = $managedDeviceOverview.enrolledDeviceCount
-            "MDM enrolled devices"   = $managedDeviceOverview.mdmEnrolledCount
-            "Co-managed devices"     = $managedDeviceOverview.dualEnrolledDeviceCount
+            "MDM authority"                                      = $mdmAuthority
+            "Subscription state"                                 = $intuneSubscriptionState.subscriptionState
+            "Total enrolled devices"                             = $managedDeviceOverview.enrolledDeviceCount
+            "MDM enrolled devices"                               = $managedDeviceOverview.mdmEnrolledCount
+            "Co-managed devices"                                 = $managedDeviceOverview.dualEnrolledDeviceCount
+            "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
         }
         "Service health and message center" = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
