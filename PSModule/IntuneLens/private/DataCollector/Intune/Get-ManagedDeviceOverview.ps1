@@ -37,5 +37,11 @@ function Get-ManagedDeviceOverview {
         mdmEnrolledCount             = $resp.mdmEnrolledCount
         dualEnrolledDeviceCount      = $resp.dualEnrolledDeviceCount
         deviceOperatingSystemSummary = $resp.deviceOperatingSystemSummary
+        windowsCount                 = $resp.deviceOperatingSystemSummary.windowsCount
+        windowsMobileCount           = $resp.deviceOperatingSystemSummary.windowsMobileCount
+        iOSCount                     = $resp.deviceOperatingSystemSummary.iosCount
+        macOSCount                   = $resp.deviceOperatingSystemSummary.macOSCount
+        androidCount                 = $resp.deviceOperatingSystemSummary.androidCount
+        linuxCount                   = $resp.deviceOperatingSystemSummary.linuxCount
     }
 }

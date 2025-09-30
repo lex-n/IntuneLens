@@ -4,7 +4,7 @@ function Get-DeviceManagementSettings {
         Gets Intune device management settings.
 
     .DESCRIPTION
-        Calls the Microsoft Graph endpoint deviceManagement/settings
+        Calls the Microsoft Graph endpoint /deviceManagement/settings
         and returns Intune device management settings.
 
     .PARAMETER AccessToken

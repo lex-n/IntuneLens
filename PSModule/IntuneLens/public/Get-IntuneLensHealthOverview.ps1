@@ -101,6 +101,8 @@ function Get-IntuneLensHealthOverview {
     $intuneSubscriptionState = Get-IntuneSubscriptionState -AccessToken $AccessToken
     $managedDeviceOverview = Get-ManagedDeviceOverview -AccessToken $AccessToken
 
+    $deviceComplianceStatus = Get-DeviceComplianceStatusOverview -AccessToken $AccessToken
+
     $deviceManagementSettings = Get-DeviceManagementSettings -AccessToken $AccessToken
     $compliancePolicySettings = Get-IntuneCompliancePolicySettings -DeviceManagementSettings $deviceManagementSettings
 
@@ -202,6 +204,23 @@ function Get-IntuneLensHealthOverview {
             "MDM enrolled devices"                               = $managedDeviceOverview.mdmEnrolledCount
             "Co-managed devices"                                 = $managedDeviceOverview.dualEnrolledDeviceCount
             "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
+        }
+        "Device operating system"           = [pscustomobject][ordered]@{
+            "Windows"        = $managedDeviceOverview.windowsCount
+            "macOS"          = $managedDeviceOverview.macOSCount
+            "iOS"            = $managedDeviceOverview.iOSCount
+            "Android"        = $managedDeviceOverview.androidCount
+            "Linux"          = $managedDeviceOverview.linuxCount
+            "Windows Mobile" = $managedDeviceOverview.windowsMobileCount
+            "Total"          = $managedDeviceOverview.enrolledDeviceCount
+        }
+        "Device compliance status"          = [pscustomobject][ordered]@{
+            "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
+            "In grace period" = $deviceComplianceStatus.inGracePeriodCount
+            "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
+            "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
+            "Error"           = $deviceComplianceStatus.errorDeviceCount
+            "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
         }
         "Service health and message center" = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
