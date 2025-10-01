@@ -37,21 +37,19 @@ Install-Module IntuneLens
 
 ### Usage
 
-Run IntuneLens health check and save the report as a Markdown file.
+Run IntuneLens health check and display the report in the console.
 
 ```powershell
 # Connect to your tenant
 Connect-IntuneLens
 
-# Build the report
-$report = Get-IntuneLensHealthReport
+# Build and display the report
+Get-IntuneLensHealthOverview
 
-# Save the report to a Markdown file
-Write-IntuneLensReportMD -Path ("./reports/IntuneLens_report_{0}.md" -f (Get-Date -Format 'yyyyMMdd_HHmmss')) -Report $report
+# (Optional) Build and display the report with sensitive tenant information masked
+Get-IntuneLensHealthOverview -Protected
 
 ```
-The file will be created in the reports/ directory with a timestamp in the name, for example:
-./reports/IntuneLens_report_20250908_171234.md
 
 Note: IntuneLens is under active development. Instructions will be updated as the project evolves.
 
