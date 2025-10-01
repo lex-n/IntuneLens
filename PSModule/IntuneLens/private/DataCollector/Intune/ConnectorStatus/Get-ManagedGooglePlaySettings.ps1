@@ -39,7 +39,7 @@ function Get-ManagedGooglePlaySettings {
         }
 
         $lastSync = if ($resp.lastAppSyncDateTime) { [datetime]$resp.lastAppSyncDateTime } else { $null }
-        $status = if ($resp.lastAppSyncStatus) { [string]$resp.lastAppSyncStatus }     else { $null }
+        $status = if ($resp.lastAppSyncStatus) { [string]$resp.lastAppSyncStatus } else { $null }
 
         return [pscustomobject]@{
             lastAppSyncDateTime = $lastSync
