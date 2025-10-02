@@ -74,6 +74,8 @@ function Get-IntuneLensHealthOverview {
         }
     }
 
+    Write-Host "Building IntuneLens report... Please wait, this may take a few moments." -ForegroundColor Green
+
     $organization = Get-EntraIdOrganization -AccessToken $AccessToken
     $defaultDomain = Get-EntraIdDefaultDomain -AccessToken $AccessToken
     $orgName = if ($Protected) { 'Protected' } else { $organization.displayName }
@@ -99,6 +101,11 @@ function Get-IntuneLensHealthOverview {
 
     $mdmAuthority = Get-MdmAuthority -AccessToken $AccessToken -OrganizationId $organization.id
     $intuneSubscriptionState = Get-IntuneSubscriptionState -AccessToken $AccessToken
+
+    $skus = Get-SubscribedSkus -AccessToken $AccessToken
+    $totalIntuneLicenses = Get-IntuneTotalLicenses -SubscribedSkus $skus
+    $totalIntuneLicensedUsers = Get-IntuneTotalLicensedUsers -SubscribedSkus $skus
+
     $managedDeviceOverview = Get-ManagedDeviceOverview -AccessToken $AccessToken
 
     $deviceComplianceStatus = Get-DeviceComplianceStatusOverview -AccessToken $AccessToken
@@ -205,6 +212,10 @@ function Get-IntuneLensHealthOverview {
             "Co-managed devices"                                 = $managedDeviceOverview.dualEnrolledDeviceCount
             "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
         }
+        "Intune licenses"                   = [pscustomobject][ordered]@{
+            "Total Intune licenses" = $totalIntuneLicenses
+            "Total licensed users"  = $totalIntuneLicensedUsers
+        }
         "Device operating system"           = [pscustomobject][ordered]@{
             "Windows"        = $managedDeviceOverview.windowsCount
             "macOS"          = $managedDeviceOverview.macOSCount
@@ -231,15 +242,15 @@ function Get-IntuneLensHealthOverview {
     }
 
     Write-Host ""
-    Write-Host "# IntuneLens - Intune Health Overview" -ForegroundColor DarkYellow
+    Write-Host "# IntuneLens - Intune Health Overview" -ForegroundColor Yellow
 
-    Write-Host "## Entra ID Overview" -ForegroundColor DarkGreen
+    Write-Host "## Entra ID Overview" -ForegroundColor Green
     foreach ($sectionName in $EntraIdReport.Keys) {
         Show-Section -Title $sectionName -Data $EntraIdReport[$sectionName]
     }
     Write-Host ""
 
-    Write-Host "## Intune Overview" -ForegroundColor DarkGreen
+    Write-Host "## Intune Overview" -ForegroundColor Green
     foreach ($sectionName in $IntuneReport.Keys) {
         Show-Section -Title $sectionName -Data $IntuneReport[$sectionName]
     }

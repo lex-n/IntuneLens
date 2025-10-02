@@ -46,7 +46,8 @@ Connect-IntuneLens
 # Build and display the report
 Get-IntuneLensHealthOverview
 
-# (Optional) Build and display the report with sensitive tenant information masked
+# (Optional) Build and display the report with sensitive tenant information
+# (such as Organization name, Default domain, Tenant creation datetime) masked
 Get-IntuneLensHealthOverview -Protected
 
 ```
