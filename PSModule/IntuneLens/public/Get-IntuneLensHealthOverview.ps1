@@ -106,6 +106,25 @@ function Get-IntuneLensHealthOverview {
     $totalIntuneLicenses = Get-IntuneTotalLicenses -SubscribedSkus $skus
     $totalIntuneLicensedUsers = Get-IntuneTotalLicensedUsers -SubscribedSkus $skus
 
+    $intuneAddOns = Get-IntuneAddOnsStatus -SubscribedSkus $skus
+    $intuneAddOnsSectionHt = [ordered]@{}
+
+    foreach ($prop in $intuneAddOns.PSObject.Properties) {
+        $name = $prop.Name
+        $consumed = [int]$prop.Value.consumed
+        $purchased = [int]$prop.Value.purchased
+        if ($consumed -gt 0 -or $purchased -gt 0) {
+            $intuneAddOnsSectionHt[$name] = '{0} / {1}' -f $consumed, $purchased
+        }
+    }
+
+    if ($intuneAddOnsSectionHt.Count -eq 0) {
+        $intuneAddOnsSectionHt['No add-ons found'] = '-'
+    }
+
+    $intuneAddOnsSection = [pscustomobject]$intuneAddOnsSectionHt
+
+
     $managedDeviceOverview = Get-ManagedDeviceOverview -AccessToken $AccessToken
 
     $deviceComplianceStatus = Get-DeviceComplianceStatusOverview -AccessToken $AccessToken
@@ -204,7 +223,7 @@ function Get-IntuneLensHealthOverview {
     }
 
     $IntuneReport = [ordered]@{
-        "Basic information"                 = [pscustomobject][ordered]@{
+        "Basic information"                              = [pscustomobject][ordered]@{
             "MDM authority"                                      = $mdmAuthority
             "Subscription state"                                 = $intuneSubscriptionState.subscriptionState
             "Total enrolled devices"                             = $managedDeviceOverview.enrolledDeviceCount
@@ -212,11 +231,12 @@ function Get-IntuneLensHealthOverview {
             "Co-managed devices"                                 = $managedDeviceOverview.dualEnrolledDeviceCount
             "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
         }
-        "Intune licenses"                   = [pscustomobject][ordered]@{
+        "Intune licenses"                                = [pscustomobject][ordered]@{
             "Total Intune licenses" = $totalIntuneLicenses
             "Total licensed users"  = $totalIntuneLicensedUsers
         }
-        "Device operating system"           = [pscustomobject][ordered]@{
+        "Intune add-ons (consumed / purchased quantity)" = $intuneAddOnsSection
+        "Device operating system"                        = [pscustomobject][ordered]@{
             "Windows"        = $managedDeviceOverview.windowsCount
             "macOS"          = $managedDeviceOverview.macOSCount
             "iOS"            = $managedDeviceOverview.iOSCount
@@ -225,7 +245,7 @@ function Get-IntuneLensHealthOverview {
             "Windows Mobile" = $managedDeviceOverview.windowsMobileCount
             "Total"          = $managedDeviceOverview.enrolledDeviceCount
         }
-        "Device compliance status"          = [pscustomobject][ordered]@{
+        "Device compliance status"                       = [pscustomobject][ordered]@{
             "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
             "In grace period" = $deviceComplianceStatus.inGracePeriodCount
             "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
@@ -233,12 +253,12 @@ function Get-IntuneLensHealthOverview {
             "Error"           = $deviceComplianceStatus.errorDeviceCount
             "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
         }
-        "Service health and message center" = [pscustomobject][ordered]@{
+        "Service health and message center"              = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
             "Active advisories"        = @($intuneActiveAdvisories).Count
             "Action required messages" = @($intuneActionRequiredMessages).Count
         }
-        "Connector status"                  = [pscustomobject]$combinedConnectorStatus
+        "Connector status"                               = [pscustomobject]$combinedConnectorStatus
     }
 
     Write-Host ""
