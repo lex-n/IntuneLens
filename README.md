@@ -50,6 +50,9 @@ Get-IntuneLensHealthOverview
 # (such as Organization name, Default domain, Tenant creation datetime) masked
 Get-IntuneLensHealthOverview -Protected
 
+# Clear the current IntuneLens session
+Disconnect-IntuneLens
+
 ```
 
 Note: IntuneLens is under active development. Instructions will be updated as the project evolves.
