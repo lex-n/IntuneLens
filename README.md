@@ -1,22 +1,24 @@
 # IntuneLens
 
-IntuneLens is a PowerShell module designed to help IT managers and administrators assess the health and configuration of their Microsoft Intune environment. It collects and analyzes data from Microsoft Intune via Graph API, calculates Intune health score and presents key information in the easy-to-understand reports.
+IntuneLens is a PowerShell module designed to help IT managers and administrators assess health and configuration of Microsoft Intune environment. It collects and analyzes data from Microsoft Intune via Graph API, calculates Intune health score and presents key information in the easy-to-understand reports.
 
 The goal of this project is to make it easier for organizations to:  
-- Understand their current Intune posture.  
-- Highlight strengths and weaknesses in configuration.  
-- Track optimization opportunities and improve overall device and policy management. 
+- Understand current Intune posture.
+- Highlight strengths and weaknesses in Intune configuration.
+- Track optimization opportunities and improve overall device and policy management.
 
 By automating the assessment process, IntuneLens saves administrators time, reduces manual effort, and provides consistent insights that support both day-to-day operations and long-term IT strategy.
 
 ## Features
 
-- Device compliance overview  
-- App deployment and update status  
-- Security baselines and configuration profiles  
-- Conditional access and policy insights  
-- Detection of expired tokens and misconfigurations  
-- Exportable reports for IT management
+- Entra ID overview
+- Intune tenant overview
+- Device compliance overview - In development
+- App deployment and update status - In development
+- Security baselines and configuration profiles - In development
+- Conditional access and policy insights - In development
+- Detection of expired tokens and misconfigurations - In development
+- Exportable reports for IT management - In development
 
 ## Getting Started
 
@@ -26,7 +28,8 @@ By automating the assessment process, IntuneLens saves administrators time, redu
 - Admin consent granted for those permissions
 
 ### Installation
-The required modules are available in the PowerShell Gallery, making installation quick and easy.
+The required modules are available in the PowerShell Gallery.
+Installation steps:
 
 ```powershell
 

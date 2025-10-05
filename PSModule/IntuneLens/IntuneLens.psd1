@@ -12,7 +12,7 @@
     RootModule        = 'IntuneLens.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.1'
+    ModuleVersion     = '1.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@
     Copyright         = '(c) 2025 Alex Nuryiev. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'IntuneLens is a PowerShell module that automates Microsoft Intune health assessment and generates comprehensive report to help IT administrators monitor and optimize their Intune environments.'
+    Description = 'IntuneLens is a PowerShell module that automates Microsoft Intune health assessment and generates report to help IT administrators monitor and optimize Intune environments.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
