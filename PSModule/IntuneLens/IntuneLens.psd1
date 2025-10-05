@@ -12,7 +12,7 @@
     RootModule        = 'IntuneLens.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.1'
+    ModuleVersion     = '1.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@
     Copyright         = '(c) 2025 Alex Nuryiev. All rights reserved.'
 
     # Description of the functionality provided by this module
-    # Description = ''
+    Description = 'IntuneLens is a PowerShell module that automates Microsoft Intune health assessment and generates report to help IT administrators monitor and optimize Intune environments.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -69,12 +69,10 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    #FunctionsToExport = 'Connect-IntuneLens', 'Disconnect-IntuneLens', 'Get-IntuneLensData', 'Get-IntuneLensReport', 'Export-IntuneLensReport', 'Show-IntuneLensReport'
     FunctionsToExport = @(
         'Connect-IntuneLens',
-        'Get-IntuneLensHealthReport',
-        'Write-IntuneLensReportMD',
-        'Get-IntuneLensHealthOverview'
+        'Get-IntuneLensHealthOverview',
+        'Disconnect-IntuneLens'
     )
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport   = '*'
@@ -106,7 +104,7 @@
             # LicenseUri = ''
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://github.com/lex-n/IntuneLens'
 
             # A URL to an icon representing this module.
             # IconUri = ''
