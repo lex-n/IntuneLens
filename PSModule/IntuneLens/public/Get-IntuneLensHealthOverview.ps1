@@ -27,9 +27,6 @@ function Get-IntuneLensHealthOverview {
         Get-IntuneLensHealthOverview orchestrates the collection and analysis of data, 
         and renders the Intune Health Overview report to console in a human-friendly format.
 
-    .PARAMETER AccessToken
-        Bearer token for Microsoft Graph.
-
     .PARAMETER Protected
         Optional switch. If specified, sensitive tenant information such as
         "Organization name", "Default domain", "Tenant creation datetime"
@@ -49,29 +46,34 @@ function Get-IntuneLensHealthOverview {
     
     [CmdletBinding()]
     param(
-        [string] $AccessToken,
         [switch] $Protected
     )
 
     Set-StrictMode -Version Latest
     $ErrorActionPreference = 'Stop'
 
+    $contextVariable = Get-Variable -Name IntuneLensContext -Scope Script -ErrorAction SilentlyContinue
+    if ($null -eq $contextVariable) {
+        Write-Host "No active IntuneLens session. Run Connect-IntuneLens first." -ForegroundColor Red
+        return
+    }
+
     # AccessToken
-    if (-not $AccessToken) {
-        if ($script:IntuneLensContext -and $script:IntuneLensContext.AccessToken) {
-            # Check if the stored token is still valid (5 min skew buffer)
-            $now = Get-Date
-            $limit = $now.AddMinutes(5)
+    if ($script:IntuneLensContext -and $script:IntuneLensContext.AccessToken) {
+        # Check if the stored token is still valid (5 min skew buffer)
+        $now = Get-Date
+        $limit = $now.AddMinutes(5)
 
-            if ($script:IntuneLensContext.ExpiresOn -le $limit) {
-                throw "The stored access token has expired or is about to expire. Run Connect-IntuneLens again."
-            }
+        if ($script:IntuneLensContext.ExpiresOn -le $limit) {
+            Write-Host "The stored access token has expired or is about to expire. Run Connect-IntuneLens again." -ForegroundColor Red
+            return
+        }
 
-            $AccessToken = $script:IntuneLensContext.AccessToken
-        }
-        else {
-            throw "No AccessToken available. Run Connect-IntuneLens first."
-        }
+        $AccessToken = $script:IntuneLensContext.AccessToken
+    }
+    else {
+        Write-Host "No AccessToken available. Run Connect-IntuneLens first." -ForegroundColor Red
+        return
     }
 
     Write-Host "Building IntuneLens report... Please wait, this may take a few moments." -ForegroundColor Green
@@ -228,7 +230,7 @@ function Get-IntuneLensHealthOverview {
             "Subscription state"                                 = $intuneSubscriptionState.subscriptionState
             "Total enrolled devices"                             = $managedDeviceOverview.enrolledDeviceCount
             "MDM enrolled devices"                               = $managedDeviceOverview.mdmEnrolledCount
-            "Co-managed devices"                                 = $managedDeviceOverview.dualEnrolledDeviceCount
+            "Dual-enrolled (MDM and EAS) devices"                = $managedDeviceOverview.dualEnrolledDeviceCount
             "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
         }
         "Intune licenses"                                = [pscustomobject][ordered]@{
@@ -249,6 +251,7 @@ function Get-IntuneLensHealthOverview {
             "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
             "In grace period" = $deviceComplianceStatus.inGracePeriodCount
             "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
+            "Not evaluated"   = $deviceComplianceStatus.unknownDeviceCount
             "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
             "Error"           = $deviceComplianceStatus.errorDeviceCount
             "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
