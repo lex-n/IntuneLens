@@ -148,7 +148,8 @@ function Get-IntuneLensHealthOverview {
         [pscustomobject]$o
     }
 
-    $ApplePushNotificationCertificate = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
+    $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
+    $apnsStatus = Get-IntuneApnsStatus -ApplePushNotificationCertificate $apns
     $VppTokens = Get-VppTokens -AccessToken $AccessToken
     $DepTokens = Get-DepTokens -AccessToken $AccessToken
     $ManagedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
@@ -159,7 +160,6 @@ function Get-IntuneLensHealthOverview {
     $JamfConnector = Get-JamfConnector -AccessToken $AccessToken
 
     $connectorInputs = [ordered]@{
-        'Apple Push Notification Certificate'              = $ApplePushNotificationCertificate
         'Apple VPP'                                        = $VppTokens
         'Apple DEP'                                        = $DepTokens
         'Managed Google Play'                              = $ManagedGooglePlaySettings
@@ -179,6 +179,7 @@ function Get-IntuneLensHealthOverview {
     }
 
     $combinedConnectorStatus = [ordered]@{}
+    $combinedConnectorStatus[$apnsStatus.connectorName] = $apnsStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {
