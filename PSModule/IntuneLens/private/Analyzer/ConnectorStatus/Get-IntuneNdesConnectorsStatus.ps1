@@ -29,7 +29,7 @@ function Get-IntuneNdesConnectorsStatus {
     [OutputType([pscustomobject])]
     param(
         [Parameter()]
-        [psobject] $NdesConnectors
+        [pscustomobject] $NdesConnectors
     )
 
     if ($null -eq $NdesConnectors -or (@($NdesConnectors).Count -eq 0)) {

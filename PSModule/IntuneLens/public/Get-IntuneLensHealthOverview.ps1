@@ -160,6 +160,7 @@ function Get-IntuneLensHealthOverview {
     $mobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
     $microsoftDefenderForEndpointConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
     $jamfConnector = Get-JamfConnector -AccessToken $AccessToken
+    $jamfConnectorStatus = Get-IntuneJamfConnectorStatus -JamfConnector $jamfConnector
 
     $connectorInputs = [ordered]@{
         'Apple VPP'                                        = $vppTokens
@@ -167,7 +168,6 @@ function Get-IntuneLensHealthOverview {
         'Windows Autopilot'                                = $windowsAutopilotSettings
         'Mobile Threat Defense Connectors (non-Microsoft)' = $mobileThreatDefenseConnectors
         'Microsoft Defender for Endpoint Connector'        = $microsoftDefenderForEndpointConnector
-        'JAMF'                                             = $jamfConnector
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -182,6 +182,7 @@ function Get-IntuneLensHealthOverview {
     $combinedConnectorStatus[$apnsStatus.connectorName] = $apnsStatus.status
     $combinedConnectorStatus[$managedGooglePlayAppStatus.connectorName] = $managedGooglePlayAppStatus.status
     $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
+    $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {

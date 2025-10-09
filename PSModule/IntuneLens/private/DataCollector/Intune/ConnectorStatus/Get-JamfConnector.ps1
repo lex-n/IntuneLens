@@ -29,7 +29,7 @@ function Get-JamfConnector {
     $endpoint = "$base/deviceManagement/deviceManagementPartners"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=displayName,isConfigured,lastHeartbeatDateTime,partnerState"
+    $url = "$endpoint`?`$select=id,displayName,isConfigured,lastHeartbeatDateTime,partnerState"
 
     try {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
@@ -51,6 +51,7 @@ function Get-JamfConnector {
         }
 
         return [pscustomobject]@{
+            id                    = $jamf.id
             lastHeartbeatDateTime = $lastHeartbeat
             partnerState          = [string]$jamf.partnerState
         }

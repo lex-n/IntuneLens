@@ -29,7 +29,7 @@ function Get-ManagedGooglePlaySettings {
     $endpoint = "$base/deviceManagement/androidManagedStoreAccountEnterpriseSettings"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=bindStatus,lastAppSyncDateTime,lastAppSyncStatus"
+    $url = $endpoint
 
     try {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop

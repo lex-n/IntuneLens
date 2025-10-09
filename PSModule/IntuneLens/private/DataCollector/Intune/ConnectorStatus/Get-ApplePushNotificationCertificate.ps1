@@ -29,7 +29,7 @@ function Get-ApplePushNotificationCertificate {
     $endpoint = "$base/deviceManagement/applePushNotificationCertificate"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=expirationDateTime"
+    $url = $endpoint
 
     try {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop

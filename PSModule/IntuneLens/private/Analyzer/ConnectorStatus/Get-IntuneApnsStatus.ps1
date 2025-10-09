@@ -63,6 +63,6 @@ function Get-IntuneApnsStatus {
         connectorName       = 'applePushNotificationServiceExpirationDateTime'
         connectorInstanceId = $ApplePushNotificationCertificate.id
         status              = $status
-        eventDateTime       = $ApplePushNotificationCertificate.expirationDateTime
+        eventDateTime       = $expirationDateTime
     }
 }

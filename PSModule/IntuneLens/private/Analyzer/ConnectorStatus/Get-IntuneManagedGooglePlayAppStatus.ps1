@@ -80,6 +80,6 @@ function Get-IntuneManagedGooglePlayAppStatus {
         connectorName       = 'googlePlayAppLastSyncDateTime'
         connectorInstanceId = $ManagedGooglePlaySettings.id
         status              = $status
-        eventDateTime       = $ManagedGooglePlaySettings.lastAppSyncDateTime
+        eventDateTime       = $lastAppSyncDateTime
     }
 }
