@@ -150,24 +150,24 @@ function Get-IntuneLensHealthOverview {
 
     $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
     $apnsStatus = Get-IntuneApnsStatus -ApplePushNotificationCertificate $apns
-    $VppTokens = Get-VppTokens -AccessToken $AccessToken
-    $DepTokens = Get-DepTokens -AccessToken $AccessToken
+    $vppTokens = Get-VppTokens -AccessToken $AccessToken
+    $depTokens = Get-DepTokens -AccessToken $AccessToken
     $managedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
     $managedGooglePlayAppStatus = Get-IntuneManagedGooglePlayAppStatus -ManagedGooglePlaySettings $managedGooglePlaySettings
-    $WindowsAutopilotSettings = Get-WindowsAutopilotSettings -AccessToken $AccessToken
-    $NdesConnectors = Get-NdesConnectors -AccessToken $AccessToken
-    $MobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
-    $MicrosoftDefenderForEndpointConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
-    $JamfConnector = Get-JamfConnector -AccessToken $AccessToken
+    $windowsAutopilotSettings = Get-WindowsAutopilotSettings -AccessToken $AccessToken
+    $ndesConnectors = Get-NdesConnectors -AccessToken $AccessToken
+    $ndesConnectorsStatus = Get-IntuneNdesConnectorsStatus -NdesConnectors $ndesConnectors
+    $mobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
+    $microsoftDefenderForEndpointConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
+    $jamfConnector = Get-JamfConnector -AccessToken $AccessToken
 
     $connectorInputs = [ordered]@{
-        'Apple VPP'                                        = $VppTokens
-        'Apple DEP'                                        = $DepTokens
-        'Windows Autopilot'                                = $WindowsAutopilotSettings
-        'NDES Connectors'                                  = $NdesConnectors
-        'Mobile Threat Defense Connectors (non-Microsoft)' = $MobileThreatDefenseConnectors
-        'Microsoft Defender for Endpoint Connector'        = $MicrosoftDefenderForEndpointConnector
-        'JAMF'                                             = $JamfConnector
+        'Apple VPP'                                        = $vppTokens
+        'Apple DEP'                                        = $depTokens
+        'Windows Autopilot'                                = $windowsAutopilotSettings
+        'Mobile Threat Defense Connectors (non-Microsoft)' = $mobileThreatDefenseConnectors
+        'Microsoft Defender for Endpoint Connector'        = $microsoftDefenderForEndpointConnector
+        'JAMF'                                             = $jamfConnector
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -181,6 +181,7 @@ function Get-IntuneLensHealthOverview {
     $combinedConnectorStatus = [ordered]@{}
     $combinedConnectorStatus[$apnsStatus.connectorName] = $apnsStatus.status
     $combinedConnectorStatus[$managedGooglePlayAppStatus.connectorName] = $managedGooglePlayAppStatus.status
+    $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {
