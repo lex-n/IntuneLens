@@ -138,16 +138,6 @@ function Get-IntuneLensHealthOverview {
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
     $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
 
-    $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
-    $connectorStatusSection =
-    if (@($connectorStatus).Count -gt 0) {
-        $o = [ordered]@{}
-        foreach ($c in $connectorStatus) {
-            $o[$c.connectorName] = $c.status
-        }
-        [pscustomobject]$o
-    }
-
     $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
     $apnsStatus = Get-IntuneApnsStatus -ApplePushNotificationCertificate $apns
     $vppTokens = Get-VppTokens -AccessToken $AccessToken
@@ -158,7 +148,8 @@ function Get-IntuneLensHealthOverview {
     $ndesConnectors = Get-NdesConnectors -AccessToken $AccessToken
     $ndesConnectorsStatus = Get-IntuneNdesConnectorsStatus -NdesConnectors $ndesConnectors
     $mobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
-    $microsoftDefenderForEndpointConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
+    $mdeConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
+    $mdeConnectorStatus = Get-IntuneMicrosoftDefenderForEndpointConnectorStatus -MicrosoftDefenderForEndpointConnector $mdeConnector
     $jamfConnector = Get-JamfConnector -AccessToken $AccessToken
     $jamfConnectorStatus = Get-IntuneJamfConnectorStatus -JamfConnector $jamfConnector
 
@@ -167,7 +158,6 @@ function Get-IntuneLensHealthOverview {
         'Apple DEP'                                        = $depTokens
         'Windows Autopilot'                                = $windowsAutopilotSettings
         'Mobile Threat Defense Connectors (non-Microsoft)' = $mobileThreatDefenseConnectors
-        'Microsoft Defender for Endpoint Connector'        = $microsoftDefenderForEndpointConnector
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -178,11 +168,30 @@ function Get-IntuneLensHealthOverview {
         }
     }
 
+    $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
+    $connectorStatusSection =
+    if (@($connectorStatus).Count -gt 0) {
+        $o = [ordered]@{}
+        foreach ($c in $connectorStatus) {
+            if ($null -ne $mdeConnector -and
+                $null -ne $mdeConnector.id -and
+                $null -ne $c.connectorInstanceId -and
+                $c.connectorInstanceId -eq $mdeConnector.id) {
+
+                $o[$mdeConnectorStatus.connectorName] = $c.status
+                continue
+            }
+            $o[$c.connectorName] = $c.status
+        }
+        [pscustomobject]$o
+    }
+
     $combinedConnectorStatus = [ordered]@{}
     $combinedConnectorStatus[$apnsStatus.connectorName] = $apnsStatus.status
     $combinedConnectorStatus[$managedGooglePlayAppStatus.connectorName] = $managedGooglePlayAppStatus.status
     $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
     $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
+    $combinedConnectorStatus[$mdeConnectorStatus.connectorName] = $mdeConnectorStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {

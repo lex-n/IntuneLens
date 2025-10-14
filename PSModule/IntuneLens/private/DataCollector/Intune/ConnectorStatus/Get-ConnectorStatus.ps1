@@ -38,8 +38,9 @@ function Get-ConnectorStatus {
 
         $items = foreach ($c in $resp.value) {
             [pscustomobject]@{
-                connectorName = $c.connectorName
-                status        = $c.status
+                connectorName       = $c.connectorName
+                connectorInstanceId = $c.connectorInstanceId
+                status              = $c.status
             }
         }
 
