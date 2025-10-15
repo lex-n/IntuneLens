@@ -149,15 +149,15 @@ function Get-IntuneLensHealthOverview {
     $ndesConnectors = Get-NdesConnectors -AccessToken $AccessToken
     $ndesConnectorsStatus = Get-IntuneNdesConnectorsStatus -NdesConnectors $ndesConnectors
     $mobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
+    $mobileThreatDefenseConnectorsStatus = Get-IntuneMobileThreatDefenseConnectorsStatus -MobileThreatDefenseConnectors $mobileThreatDefenseConnectors
     $mdeConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
     $mdeConnectorStatus = Get-IntuneMicrosoftDefenderForEndpointConnectorStatus -MicrosoftDefenderForEndpointConnector $mdeConnector
     $jamfConnector = Get-JamfConnector -AccessToken $AccessToken
     $jamfConnectorStatus = Get-IntuneJamfConnectorStatus -JamfConnector $jamfConnector
 
     $connectorInputs = [ordered]@{
-        'Apple VPP'                                        = $vppTokens
-        'Apple DEP'                                        = $depTokens
-        'Mobile Threat Defense Connectors (non-Microsoft)' = $mobileThreatDefenseConnectors
+        'Apple VPP' = $vppTokens
+        'Apple DEP' = $depTokens
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -193,6 +193,7 @@ function Get-IntuneLensHealthOverview {
     $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
     $combinedConnectorStatus[$mdeConnectorStatus.connectorName] = $mdeConnectorStatus.status
     $combinedConnectorStatus[$windowsAutopilotStatus.connectorName] = $windowsAutopilotStatus.status
+    $combinedConnectorStatus[$mobileThreatDefenseConnectorsStatus.connectorName] = $mobileThreatDefenseConnectorsStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {

@@ -69,7 +69,7 @@ function Get-IntuneNdesConnectorsStatus {
         $status = 'unknown'
         $isActive = ($state -eq 'active')
 
-        if (-not $isActive -and $state) {
+        if ($state -and -not $isActive) {
             $status = 'unhealthy'
         }
         elseif ($isActive -and $lastConnectionDateTime) {
