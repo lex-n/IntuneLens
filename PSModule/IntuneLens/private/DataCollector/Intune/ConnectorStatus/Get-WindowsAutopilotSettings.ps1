@@ -35,6 +35,7 @@ function Get-WindowsAutopilotSettings {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
         return [pscustomobject]@{
+            id               = if ($resp.id) { [string]$resp.id } else { $null }
             lastSyncDateTime = if ($resp.lastSyncDateTime) { [datetime]$resp.lastSyncDateTime } else { $null }
             syncStatus       = if ($resp.syncStatus) { [string]$resp.syncStatus } else { $null }
         }

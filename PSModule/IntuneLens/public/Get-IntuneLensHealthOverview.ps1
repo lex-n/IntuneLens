@@ -145,6 +145,7 @@ function Get-IntuneLensHealthOverview {
     $managedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
     $managedGooglePlayAppStatus = Get-IntuneManagedGooglePlayAppStatus -ManagedGooglePlaySettings $managedGooglePlaySettings
     $windowsAutopilotSettings = Get-WindowsAutopilotSettings -AccessToken $AccessToken
+    $windowsAutopilotStatus = Get-IntuneWindowsAutopilotStatus -WindowsAutopilotSettings $windowsAutopilotSettings
     $ndesConnectors = Get-NdesConnectors -AccessToken $AccessToken
     $ndesConnectorsStatus = Get-IntuneNdesConnectorsStatus -NdesConnectors $ndesConnectors
     $mobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
@@ -156,7 +157,6 @@ function Get-IntuneLensHealthOverview {
     $connectorInputs = [ordered]@{
         'Apple VPP'                                        = $vppTokens
         'Apple DEP'                                        = $depTokens
-        'Windows Autopilot'                                = $windowsAutopilotSettings
         'Mobile Threat Defense Connectors (non-Microsoft)' = $mobileThreatDefenseConnectors
     }
 
@@ -192,6 +192,7 @@ function Get-IntuneLensHealthOverview {
     $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
     $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
     $combinedConnectorStatus[$mdeConnectorStatus.connectorName] = $mdeConnectorStatus.status
+    $combinedConnectorStatus[$windowsAutopilotStatus.connectorName] = $windowsAutopilotStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {
