@@ -29,17 +29,23 @@ function Get-ApplePushNotificationCertificate {
     $endpoint = "$base/deviceManagement/applePushNotificationCertificate"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=expirationDateTime"
+    $url = $endpoint
 
     try {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
 
+        $id = $null
+        if ($resp.PSObject.Properties.Name -contains 'id' -and $resp.id) {
+            $id = $resp.id
+        }
+        
         $expirationDateTime = $null
         if ($resp.PSObject.Properties.Name -contains 'expirationDateTime' -and $resp.expirationDateTime) {
             $expirationDateTime = [datetime]$resp.expirationDateTime
         }
 
         return [pscustomobject]@{
+            id                 = $id
             expirationDateTime = $expirationDateTime
         }
     }

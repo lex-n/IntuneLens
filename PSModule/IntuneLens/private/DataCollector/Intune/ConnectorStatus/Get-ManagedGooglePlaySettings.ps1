@@ -29,7 +29,7 @@ function Get-ManagedGooglePlaySettings {
     $endpoint = "$base/deviceManagement/androidManagedStoreAccountEnterpriseSettings"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=bindStatus,lastAppSyncDateTime,lastAppSyncStatus"
+    $url = $endpoint
 
     try {
         $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
@@ -38,12 +38,14 @@ function Get-ManagedGooglePlaySettings {
             return @()
         }
 
-        $lastSync = if ($resp.lastAppSyncDateTime) { [datetime]$resp.lastAppSyncDateTime } else { $null }
-        $status = if ($resp.lastAppSyncStatus) { [string]$resp.lastAppSyncStatus } else { $null }
+        $id = if ($resp.id) { $resp.id } else { $null }
+        $lastAppSyncDateTime = if ($resp.lastAppSyncDateTime) { [datetime]$resp.lastAppSyncDateTime } else { $null }
+        $lastAppSyncStatus = if ($resp.lastAppSyncStatus) { [string]$resp.lastAppSyncStatus } else { $null }
 
         return [pscustomobject]@{
-            lastAppSyncDateTime = $lastSync
-            lastAppSyncStatus   = $status
+            id                  = $id
+            lastAppSyncDateTime = $lastAppSyncDateTime
+            lastAppSyncStatus   = $lastAppSyncStatus
         }
     }
     catch {

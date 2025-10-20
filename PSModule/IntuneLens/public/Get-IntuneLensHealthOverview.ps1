@@ -27,9 +27,6 @@ function Get-IntuneLensHealthOverview {
         Get-IntuneLensHealthOverview orchestrates the collection and analysis of data, 
         and renders the Intune Health Overview report to console in a human-friendly format.
 
-    .PARAMETER AccessToken
-        Bearer token for Microsoft Graph.
-
     .PARAMETER Protected
         Optional switch. If specified, sensitive tenant information such as
         "Organization name", "Default domain", "Tenant creation datetime"
@@ -49,29 +46,34 @@ function Get-IntuneLensHealthOverview {
     
     [CmdletBinding()]
     param(
-        [string] $AccessToken,
         [switch] $Protected
     )
 
     Set-StrictMode -Version Latest
     $ErrorActionPreference = 'Stop'
 
+    $contextVariable = Get-Variable -Name IntuneLensContext -Scope Script -ErrorAction SilentlyContinue
+    if ($null -eq $contextVariable) {
+        Write-Host "No active IntuneLens session. Run Connect-IntuneLens first." -ForegroundColor Red
+        return
+    }
+
     # AccessToken
-    if (-not $AccessToken) {
-        if ($script:IntuneLensContext -and $script:IntuneLensContext.AccessToken) {
-            # Check if the stored token is still valid (5 min skew buffer)
-            $now = Get-Date
-            $limit = $now.AddMinutes(5)
+    if ($script:IntuneLensContext -and $script:IntuneLensContext.AccessToken) {
+        # Check if the stored token is still valid (5 min skew buffer)
+        $now = Get-Date
+        $limit = $now.AddMinutes(5)
 
-            if ($script:IntuneLensContext.ExpiresOn -le $limit) {
-                throw "The stored access token has expired or is about to expire. Run Connect-IntuneLens again."
-            }
+        if ($script:IntuneLensContext.ExpiresOn -le $limit) {
+            Write-Host "The stored access token has expired or is about to expire. Run Connect-IntuneLens again." -ForegroundColor Red
+            return
+        }
 
-            $AccessToken = $script:IntuneLensContext.AccessToken
-        }
-        else {
-            throw "No AccessToken available. Run Connect-IntuneLens first."
-        }
+        $AccessToken = $script:IntuneLensContext.AccessToken
+    }
+    else {
+        Write-Host "No AccessToken available. Run Connect-IntuneLens first." -ForegroundColor Red
+        return
     }
 
     Write-Host "Building IntuneLens report... Please wait, this may take a few moments." -ForegroundColor Green
@@ -136,36 +138,26 @@ function Get-IntuneLensHealthOverview {
     $intuneActiveAdvisories = Get-IntuneActiveAdvisories -AccessToken $AccessToken
     $intuneActionRequiredMessages = Get-IntuneActionRequiredMessages -AccessToken $AccessToken
 
-    $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
-    $connectorStatusSection =
-    if (@($connectorStatus).Count -gt 0) {
-        $o = [ordered]@{}
-        foreach ($c in $connectorStatus) {
-            $o[$c.connectorName] = $c.status
-        }
-        [pscustomobject]$o
-    }
-
-    $ApplePushNotificationCertificate = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
-    $VppTokens = Get-VppTokens -AccessToken $AccessToken
-    $DepTokens = Get-DepTokens -AccessToken $AccessToken
-    $ManagedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
-    $WindowsAutopilotSettings = Get-WindowsAutopilotSettings -AccessToken $AccessToken
-    $NdesConnectors = Get-NdesConnectors -AccessToken $AccessToken
-    $MobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
-    $MicrosoftDefenderForEndpointConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
-    $JamfConnector = Get-JamfConnector -AccessToken $AccessToken
+    $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
+    $apnsStatus = Get-IntuneApnsStatus -ApplePushNotificationCertificate $apns
+    $vppTokens = Get-VppTokens -AccessToken $AccessToken
+    $depTokens = Get-DepTokens -AccessToken $AccessToken
+    $managedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
+    $managedGooglePlayAppStatus = Get-IntuneManagedGooglePlayAppStatus -ManagedGooglePlaySettings $managedGooglePlaySettings
+    $windowsAutopilotSettings = Get-WindowsAutopilotSettings -AccessToken $AccessToken
+    $windowsAutopilotStatus = Get-IntuneWindowsAutopilotStatus -WindowsAutopilotSettings $windowsAutopilotSettings
+    $ndesConnectors = Get-NdesConnectors -AccessToken $AccessToken
+    $ndesConnectorsStatus = Get-IntuneNdesConnectorsStatus -NdesConnectors $ndesConnectors
+    $mobileThreatDefenseConnectors = Get-MobileThreatDefenseConnectors -AccessToken $AccessToken
+    $mobileThreatDefenseConnectorsStatus = Get-IntuneMobileThreatDefenseConnectorsStatus -MobileThreatDefenseConnectors $mobileThreatDefenseConnectors
+    $mdeConnector = Get-MicrosoftDefenderForEndpointConnector -AccessToken $AccessToken
+    $mdeConnectorStatus = Get-IntuneMicrosoftDefenderForEndpointConnectorStatus -MicrosoftDefenderForEndpointConnector $mdeConnector
+    $jamfConnector = Get-JamfConnector -AccessToken $AccessToken
+    $jamfConnectorStatus = Get-IntuneJamfConnectorStatus -JamfConnector $jamfConnector
 
     $connectorInputs = [ordered]@{
-        'Apple Push Notification Certificate'              = $ApplePushNotificationCertificate
-        'Apple VPP'                                        = $VppTokens
-        'Apple DEP'                                        = $DepTokens
-        'Managed Google Play'                              = $ManagedGooglePlaySettings
-        'Windows Autopilot'                                = $WindowsAutopilotSettings
-        'NDES Connectors'                                  = $NdesConnectors
-        'Mobile Threat Defense Connectors (non-Microsoft)' = $MobileThreatDefenseConnectors
-        'Microsoft Defender for Endpoint Connector'        = $MicrosoftDefenderForEndpointConnector
-        'JAMF'                                             = $JamfConnector
+        'Apple VPP' = $vppTokens
+        'Apple DEP' = $depTokens
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -176,7 +168,32 @@ function Get-IntuneLensHealthOverview {
         }
     }
 
+    $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
+    $connectorStatusSection =
+    if (@($connectorStatus).Count -gt 0) {
+        $o = [ordered]@{}
+        foreach ($c in $connectorStatus) {
+            if ($null -ne $mdeConnector -and
+                $null -ne $mdeConnector.id -and
+                $null -ne $c.connectorInstanceId -and
+                $c.connectorInstanceId -eq $mdeConnector.id) {
+
+                $o[$mdeConnectorStatus.connectorName] = $c.status
+                continue
+            }
+            $o[$c.connectorName] = $c.status
+        }
+        [pscustomobject]$o
+    }
+
     $combinedConnectorStatus = [ordered]@{}
+    $combinedConnectorStatus[$apnsStatus.connectorName] = $apnsStatus.status
+    $combinedConnectorStatus[$managedGooglePlayAppStatus.connectorName] = $managedGooglePlayAppStatus.status
+    $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
+    $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
+    $combinedConnectorStatus[$mdeConnectorStatus.connectorName] = $mdeConnectorStatus.status
+    $combinedConnectorStatus[$windowsAutopilotStatus.connectorName] = $windowsAutopilotStatus.status
+    $combinedConnectorStatus[$mobileThreatDefenseConnectorsStatus.connectorName] = $mobileThreatDefenseConnectorsStatus.status
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {
@@ -228,7 +245,7 @@ function Get-IntuneLensHealthOverview {
             "Subscription state"                                 = $intuneSubscriptionState.subscriptionState
             "Total enrolled devices"                             = $managedDeviceOverview.enrolledDeviceCount
             "MDM enrolled devices"                               = $managedDeviceOverview.mdmEnrolledCount
-            "Co-managed devices"                                 = $managedDeviceOverview.dualEnrolledDeviceCount
+            "Dual-enrolled (MDM and EAS) devices"                = $managedDeviceOverview.dualEnrolledDeviceCount
             "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
         }
         "Intune licenses"                                = [pscustomobject][ordered]@{
@@ -249,6 +266,7 @@ function Get-IntuneLensHealthOverview {
             "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
             "In grace period" = $deviceComplianceStatus.inGracePeriodCount
             "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
+            "Not evaluated"   = $deviceComplianceStatus.unknownDeviceCount
             "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
             "Error"           = $deviceComplianceStatus.errorDeviceCount
             "Conflict"        = $deviceComplianceStatus.conflictDeviceCount

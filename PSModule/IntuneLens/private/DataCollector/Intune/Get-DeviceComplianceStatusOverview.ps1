@@ -36,6 +36,7 @@ function Get-DeviceComplianceStatusOverview {
         compliantDeviceCount     = $resp.compliantDeviceCount
         inGracePeriodCount       = $resp.inGracePeriodCount
         nonCompliantDeviceCount  = $resp.nonCompliantDeviceCount
+        unknownDeviceCount       = $resp.unknownDeviceCount
         notApplicableDeviceCount = $resp.notApplicableDeviceCount
         errorDeviceCount         = $resp.errorDeviceCount
         conflictDeviceCount      = $resp.conflictDeviceCount        
