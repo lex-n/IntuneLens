@@ -241,27 +241,61 @@ function Get-IntuneLensHealthOverview {
 
     $IntuneReport = [ordered]@{
         "Basic information"                              = [pscustomobject][ordered]@{
-            "MDM authority"                                      = $mdmAuthority
-            "Subscription state"                                 = $intuneSubscriptionState.subscriptionState
-            "Total enrolled devices"                             = $managedDeviceOverview.enrolledDeviceCount
-            "MDM enrolled devices"                               = $managedDeviceOverview.mdmEnrolledCount
-            "Dual-enrolled (MDM and EAS) devices"                = $managedDeviceOverview.dualEnrolledDeviceCount
-            "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
+            "MDM authority"                                      = if ($mdmAuthority.success) {
+                $mdmAuthority.mobileDeviceManagementAuthority
+            }
+            else {
+                Format-GraphResponseSummary -Response $mdmAuthority
+            }
+
+            "Subscription state"                                 = if ($intuneSubscriptionState.success) {
+                $intuneSubscriptionState.subscriptionState
+            }
+            else {
+                Format-GraphResponseSummary -Response $intuneSubscriptionState
+            }
+
+            "Mark devices with no compliance policy assigned as" = if ($deviceManagementSettings.success) {
+                $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
+            }
+            else {
+                Format-GraphResponseSummary -Response $deviceManagementSettings
+            }
         }
+        "Enrolled devices"                               = if ($managedDeviceOverview.success) {
+            [pscustomobject][ordered]@{
+                "Total enrolled devices"              = $managedDeviceOverview.enrolledDeviceCount
+                "MDM enrolled devices"                = $managedDeviceOverview.mdmEnrolledCount
+                "Dual-enrolled (MDM and EAS) devices" = $managedDeviceOverview.dualEnrolledDeviceCount
+            }
+        }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $managedDeviceOverview)
+            }
+        }
+        "Device operating system"                        = if ($managedDeviceOverview.success) {
+            [pscustomobject][ordered]@{
+                "Windows"        = $managedDeviceOverview.windowsCount
+                "macOS"          = $managedDeviceOverview.macOSCount
+                "iOS"            = $managedDeviceOverview.iOSCount
+                "Android"        = $managedDeviceOverview.androidCount
+                "Linux"          = $managedDeviceOverview.linuxCount
+                "Windows Mobile" = $managedDeviceOverview.windowsMobileCount
+                "Total"          = $managedDeviceOverview.enrolledDeviceCount
+            }
+        }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $managedDeviceOverview)
+            }
+        }
+
         "Intune licenses"                                = [pscustomobject][ordered]@{
             "Total Intune licenses" = $totalIntuneLicenses
             "Total licensed users"  = $totalIntuneLicensedUsers
         }
         "Intune add-ons (consumed / purchased quantity)" = $intuneAddOnsSection
-        "Device operating system"                        = [pscustomobject][ordered]@{
-            "Windows"        = $managedDeviceOverview.windowsCount
-            "macOS"          = $managedDeviceOverview.macOSCount
-            "iOS"            = $managedDeviceOverview.iOSCount
-            "Android"        = $managedDeviceOverview.androidCount
-            "Linux"          = $managedDeviceOverview.linuxCount
-            "Windows Mobile" = $managedDeviceOverview.windowsMobileCount
-            "Total"          = $managedDeviceOverview.enrolledDeviceCount
-        }
         "Device compliance status"                       = [pscustomobject][ordered]@{
             "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
             "In grace period" = $deviceComplianceStatus.inGracePeriodCount

@@ -30,18 +30,62 @@ function Get-ManagedDeviceOverview {
 
     $url = $endpoint
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        return [pscustomobject]@{
+            success                      = $resp.success
+            enrolledDeviceCount          = if ($resp.data -and $resp.data.enrolledDeviceCount) {
+                $resp.data.enrolledDeviceCount
+            }
+            else { 0 }
 
-    return [pscustomobject]@{
-        enrolledDeviceCount          = $resp.enrolledDeviceCount
-        mdmEnrolledCount             = $resp.mdmEnrolledCount
-        dualEnrolledDeviceCount      = $resp.dualEnrolledDeviceCount
-        deviceOperatingSystemSummary = $resp.deviceOperatingSystemSummary
-        windowsCount                 = $resp.deviceOperatingSystemSummary.windowsCount
-        windowsMobileCount           = $resp.deviceOperatingSystemSummary.windowsMobileCount
-        iOSCount                     = $resp.deviceOperatingSystemSummary.iosCount
-        macOSCount                   = $resp.deviceOperatingSystemSummary.macOSCount
-        androidCount                 = $resp.deviceOperatingSystemSummary.androidCount
-        linuxCount                   = $resp.deviceOperatingSystemSummary.linuxCount
+            mdmEnrolledCount             = if ($resp.data -and $resp.data.mdmEnrolledCount) {
+                $resp.data.mdmEnrolledCount
+            }
+            else { 0 }
+
+            dualEnrolledDeviceCount      = if ($resp.data -and $resp.data.dualEnrolledDeviceCount) {
+                $resp.data.dualEnrolledDeviceCount
+            }
+            else { 0 }
+
+            deviceOperatingSystemSummary = if ($resp.data -and $resp.data.deviceOperatingSystemSummary) {
+                $resp.data.deviceOperatingSystemSummary
+            }
+            else { 'N/A' }
+
+            windowsCount                 = if ($resp.data.deviceOperatingSystemSummary -and $resp.data.deviceOperatingSystemSummary.windowsCount) {
+                $resp.data.deviceOperatingSystemSummary.windowsCount
+            }
+            else { 0 }
+
+            windowsMobileCount           = if ($resp.data.deviceOperatingSystemSummary -and $resp.data.deviceOperatingSystemSummary.windowsMobileCount) {
+                $resp.data.deviceOperatingSystemSummary.windowsMobileCount
+            }
+            else { 0 }
+
+            iOSCount                     = if ($resp.data.deviceOperatingSystemSummary -and $resp.data.deviceOperatingSystemSummary.iosCount) {
+                $resp.data.deviceOperatingSystemSummary.iosCount
+            }
+            else { 0 }
+
+            macOSCount                   = if ($resp.data.deviceOperatingSystemSummary -and $resp.data.deviceOperatingSystemSummary.macOSCount) {
+                $resp.data.deviceOperatingSystemSummary.macOSCount
+            }
+            else { 0 }
+
+            androidCount                 = if ($resp.data.deviceOperatingSystemSummary -and $resp.data.deviceOperatingSystemSummary.androidCount) {
+                $resp.data.deviceOperatingSystemSummary.androidCount
+            }
+            else { 0 }
+
+            linuxCount                   = if ($resp.data.deviceOperatingSystemSummary -and $resp.data.deviceOperatingSystemSummary.linuxCount) {
+                $resp.data.deviceOperatingSystemSummary.linuxCount
+            }
+            else { 0 }
+        }
     }
 }

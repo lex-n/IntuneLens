@@ -30,9 +30,17 @@ function Get-IntuneSubscriptionState {
 
     $url = $endpoint
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-    return [pscustomobject]@{
-        subscriptionState = $resp.value
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        return [pscustomobject]@{
+            success           = $resp.success
+            subscriptionState = if ($resp.data -and $resp.data.value) {
+                $resp.data.value
+            }
+            else { 'N/A' }
+        }
     }
 }

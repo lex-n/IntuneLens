@@ -30,9 +30,17 @@ function Get-DeviceManagementSettings {
 
     $url = $endpoint
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-    return [pscustomobject]@{
-        secureByDefault = $resp.secureByDefault
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        return [pscustomobject]@{
+            success         = $resp.success
+            secureByDefault = if ($resp.data -and $null -ne $resp.data.secureByDefault) {
+                $resp.data.secureByDefault
+            }
+            else { 'N/A' }
+        }
     }
 }

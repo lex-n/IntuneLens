@@ -25,11 +25,20 @@ function Get-IntuneCompliancePolicySettings {
         [object] $DeviceManagementSettings
     )
 
+    if (-not $DeviceManagementSettings.success) {
+        return [pscustomobject]@{
+            status = Format-GraphResponseSummary -Response $DeviceManagementSettings
+        }
+    }
+
     $result = if ($DeviceManagementSettings.secureByDefault -eq $true) {
         "Not compliant"
     }
     elseif ($DeviceManagementSettings.secureByDefault -eq $false) {
         "Compliant"
+    }
+    else {
+        "N/A"
     }
 
     return [pscustomobject]@{
