@@ -30,15 +30,46 @@ function Get-DeviceComplianceStatusOverview {
 
     $url = $endpoint
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        return [pscustomobject]@{
+            success                  = $resp.success
+            compliantDeviceCount     = if ($resp.data -and $resp.data.compliantDeviceCount) {
+                $resp.data.compliantDeviceCount
+            }
+            else { 0 }
 
-    return [pscustomobject]@{
-        compliantDeviceCount     = $resp.compliantDeviceCount
-        inGracePeriodCount       = $resp.inGracePeriodCount
-        nonCompliantDeviceCount  = $resp.nonCompliantDeviceCount
-        unknownDeviceCount       = $resp.unknownDeviceCount
-        notApplicableDeviceCount = $resp.notApplicableDeviceCount
-        errorDeviceCount         = $resp.errorDeviceCount
-        conflictDeviceCount      = $resp.conflictDeviceCount        
+            inGracePeriodCount       = if ($resp.data -and $resp.data.inGracePeriodCount) {
+                $resp.data.inGracePeriodCount
+            }
+            else { 0 }
+
+            nonCompliantDeviceCount  = if ($resp.data -and $resp.data.nonCompliantDeviceCount) {
+                $resp.data.nonCompliantDeviceCount
+            }
+            else { 0 }
+
+            unknownDeviceCount       = if ($resp.data -and $resp.data.unknownDeviceCount) {
+                $resp.data.unknownDeviceCount
+            }
+            else { 0 }
+
+            notApplicableDeviceCount = if ($resp.data -and $resp.data.notApplicableDeviceCount) {
+                $resp.data.notApplicableDeviceCount
+            }
+            else { 0 }
+
+            errorDeviceCount         = if ($resp.data -and $resp.data.errorDeviceCount) {
+                $resp.data.errorDeviceCount
+            }
+            else { 0 }
+            conflictDeviceCount      = if ($resp.data -and $resp.data.conflictDeviceCount) {
+                $resp.data.conflictDeviceCount
+            }
+            else { 0 }
+        }
     }
 }

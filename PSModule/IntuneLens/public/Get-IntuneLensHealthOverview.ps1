@@ -296,15 +296,22 @@ function Get-IntuneLensHealthOverview {
             "Total licensed users"  = $totalIntuneLicensedUsers
         }
         "Intune add-ons (consumed / purchased quantity)" = $intuneAddOnsSection
-        "Device compliance status"                       = [pscustomobject][ordered]@{
-            "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
-            "In grace period" = $deviceComplianceStatus.inGracePeriodCount
-            "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
-            "Not evaluated"   = $deviceComplianceStatus.unknownDeviceCount
-            "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
-            "Error"           = $deviceComplianceStatus.errorDeviceCount
-            "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
+        "Device compliance status"                       = if ($deviceComplianceStatus.success) {
+            [pscustomobject][ordered]@{
+                "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
+                "In grace period" = $deviceComplianceStatus.inGracePeriodCount
+                "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
+                "Not evaluated"   = $deviceComplianceStatus.unknownDeviceCount
+                "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
+                "Error"           = $deviceComplianceStatus.errorDeviceCount
+                "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
+            }
         }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $deviceComplianceStatus)
+            }
+        }  
         "Service health and message center"              = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
             "Active advisories"        = @($intuneActiveAdvisories).Count
