@@ -223,15 +223,23 @@ function Get-IntuneLensHealthOverview {
             "Company branding"        = $companyBrandingConfigStatus
             "Security defaults"       = if ($securityDefaultsPolicy.isEnabled) { "Enabled" } else { "Not Enabled" }
         }
-        "Entra ID licenses"      = [pscustomobject][ordered]@{
-            "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
-            "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
-            "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
-            "P1 conditional access usage (members)"            = $entraIdPremiumLicenseInsight.p1ConditionalAccessUsers
-            "P1 conditional access usage (guests)"             = $entraIdPremiumLicenseInsight.p1ConditionalAccessGuestUsers
-            "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
-            "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
+        "Entra ID licenses"      = if ($entraIdPremiumLicenseInsight.success) {
+            [pscustomobject][ordered]@{
+                "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
+                "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
+                "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
+                "P1 conditional access usage (members)"            = $entraIdPremiumLicenseInsight.p1ConditionalAccessUsers
+                "P1 conditional access usage (guests)"             = $entraIdPremiumLicenseInsight.p1ConditionalAccessGuestUsers
+                "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
+                "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
+            }
         }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $entraIdPremiumLicenseInsight)
+            }
+        }
+        
         "Mobility (MDM and WIP)" = [pscustomobject][ordered]@{
             "Microsoft Intune" = if ($mobilitySummary.hasMicrosoftIntune) { "Yes" } else { "No" }
             "MDM applies to"   = $mobilitySummary.mdmAppliesTo

@@ -25,6 +25,10 @@ function Get-EntraIdLicenseLevel {
         [pscustomobject] $Insight
     )
 
+    if (-not $Insight.success) {
+        return "Microsoft Entra ID Free"
+    }
+
     $p2 = 0
     if ($null -ne $Insight.entitledP2LicenseCount) {
         $p2 = [int]$Insight.entitledP2LicenseCount

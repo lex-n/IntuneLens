@@ -57,15 +57,7 @@ function Invoke-Graph {
         catch {
             $statusCode = $null
             try { $statusCode = $_.Exception.Response.StatusCode.value__ } 
-            catch {
-                return [pscustomobject]@{
-                    success      = $false
-                    statusCode   = $null
-                    data         = $null
-                    errorCode    = 'Exception'
-                    errorMessage = $_.Exception.Message
-                }
-            }
+            catch { }
 
             $isThrottled = ($statusCode -eq 429)
 
@@ -76,15 +68,7 @@ function Invoke-Graph {
                     if ($retryAfterRaw) { $retryAfterSec = [int]$retryAfterRaw }
                 }
             }
-            catch {
-                return [pscustomobject]@{
-                    success      = $false
-                    statusCode   = $null
-                    data         = $null
-                    errorCode    = 'Exception'
-                    errorMessage = $_.Exception.Message
-                }
-            }
+            catch { }
 
             if ($attempt -lt $MaxRetries -and $isThrottled) {
                 if ($retryAfterSec -and $retryAfterSec -gt 0) {
@@ -108,15 +92,7 @@ function Invoke-Graph {
                         $errorMessage = $parsed.error.message
                     }
                 }
-                catch {
-                    return [pscustomobject]@{
-                        success      = $false
-                        statusCode   = $null
-                        data         = $null
-                        errorCode    = 'Exception'
-                        errorMessage = $_.Exception.Message
-                    }
-                }
+                catch { }
             }
 
             return [pscustomobject]@{

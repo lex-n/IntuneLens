@@ -66,6 +66,7 @@ function Get-DeviceComplianceStatusOverview {
                 $resp.data.errorDeviceCount
             }
             else { 0 }
+            
             conflictDeviceCount      = if ($resp.data -and $resp.data.conflictDeviceCount) {
                 $resp.data.conflictDeviceCount
             }
