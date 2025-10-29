@@ -31,24 +31,35 @@ function Get-ManagedGooglePlaySettings {
 
     $url = $endpoint
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $data = $resp.data
 
-        if ($null -eq $resp -or ($resp.bindStatus -and $resp.bindStatus.ToString().ToLowerInvariant() -eq 'notbound')) { 
-            return @()
+        if ($null -eq $data -or ($data.bindStatus -and $data.bindStatus -eq 'notBound')) { 
+            return [pscustomobject]@{
+                success    = $resp.success
+                bindStatus = $data.bindStatus
+            }
         }
-
-        $id = if ($resp.id) { $resp.id } else { $null }
-        $lastAppSyncDateTime = if ($resp.lastAppSyncDateTime) { [datetime]$resp.lastAppSyncDateTime } else { $null }
-        $lastAppSyncStatus = if ($resp.lastAppSyncStatus) { [string]$resp.lastAppSyncStatus } else { $null }
 
         return [pscustomobject]@{
-            id                  = $id
-            lastAppSyncDateTime = $lastAppSyncDateTime
-            lastAppSyncStatus   = $lastAppSyncStatus
+            success             = $resp.success
+            id                  = if ($data -and $data.id) { $data.id } else { 'N/A' }
+            lastAppSyncDateTime = if ($data -and $data.lastAppSyncDateTime) {
+                [datetime]$data.lastAppSyncDateTime
+            }
+            else { 'N/A' }
+            lastAppSyncStatus   = if ($data -and $data.lastAppSyncStatus) {
+                [string]$data.lastAppSyncStatus
+            }
+            else { 'N/A' }
+            bindStatus          = if ($data -and $data.bindStatus) {
+                [string]$data.bindStatus
+            }
+            else { 'N/A' }
         }
-    }
-    catch {
-        throw
     }
 }
