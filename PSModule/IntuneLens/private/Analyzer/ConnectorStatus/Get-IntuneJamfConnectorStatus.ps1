@@ -30,7 +30,16 @@ function Get-IntuneJamfConnectorStatus {
         [pscustomobject] $JamfConnector
     )
 
-    if ($null -eq $JamfConnector -or (@($JamfConnector).Count -eq 0)) {
+    if (-not $JamfConnector.success) {
+        return [pscustomobject][ordered]@{
+            connectorName       = 'JAMF'
+            connectorInstanceId = $null
+            status              = Format-GraphResponseSummary -Response $JamfConnector
+            eventDateTime       = $null
+        }
+    }
+
+    if ($null -eq $JamfConnector -or -not $JamfConnector.isConfigured) {
         return [pscustomobject][ordered]@{
             connectorName       = 'JAMF'
             connectorInstanceId = $null
