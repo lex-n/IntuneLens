@@ -36,10 +36,7 @@ function Get-JamfConnector {
         return $resp
     }
     else {
-        $partners = @()
-        if ($resp.data -and $resp.data.PSObject.Properties.Name -contains 'value') {
-            $partners = $resp.data.value
-        }
+        $partners = if ($resp.data.value) { $resp.data.value } else { @() }
 
         $jamf = $partners | Where-Object { $_.displayName -match '(?i)Jamf' } | Select-Object -First 1
 
@@ -53,7 +50,7 @@ function Get-JamfConnector {
         return [pscustomobject]@{
             success               = $resp.success
             id                    = if ($jamf.id) { $jamf.id } else { 'N/A' }
-            lastHeartbeatDateTime = if ($jamf.lastHeartbeatDateTime) { $jamf.lastHeartbeatDateTime } else { 'N/A' }
+            lastHeartbeatDateTime = if ($jamf.lastHeartbeatDateTime) { [datetime]$jamf.lastHeartbeatDateTime } else { 'N/A' }
             partnerState          = if ($jamf.partnerState) { [string]$jamf.partnerState } else { 'N/A' }
             isConfigured          = if ($jamf.isConfigured) { $jamf.isConfigured } else { $false }
         }
