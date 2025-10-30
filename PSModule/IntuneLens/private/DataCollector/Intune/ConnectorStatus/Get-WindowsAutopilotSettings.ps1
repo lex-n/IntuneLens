@@ -31,28 +31,18 @@ function Get-WindowsAutopilotSettings {
 
     $url = $endpoint
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $data = $resp.data
 
         return [pscustomobject]@{
-            id               = if ($resp.id) { [string]$resp.id } else { $null }
-            lastSyncDateTime = if ($resp.lastSyncDateTime) { [datetime]$resp.lastSyncDateTime } else { $null }
-            syncStatus       = if ($resp.syncStatus) { [string]$resp.syncStatus } else { $null }
+            success          = $resp.success
+            id               = if ($data.id) { $data.id } else { 'N/A' }
+            lastSyncDateTime = if ($data.lastSyncDateTime) { [datetime]$data.lastSyncDateTime } else { $null }
+            syncStatus       = if ($data.syncStatus) { [string]$data.syncStatus } else { 'N/A' }
         }
-    }
-    catch {
-        $statusCode = $null
-        try {
-            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
-                $statusCode = $_.Exception.Response.StatusCode.value__
-            }
-        }
-        catch { }
-
-        if ($statusCode -eq 404 -or $statusCode -eq 400) {
-            return @()
-        }
-
-        throw
     }
 }

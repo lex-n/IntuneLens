@@ -30,12 +30,22 @@ function Get-IntuneWindowsAutopilotStatus {
         [pscustomobject] $WindowsAutopilotSettings
     )
 
-    if ($null -eq $WindowsAutopilotSettings -or (@($WindowsAutopilotSettings).Count -eq 0)) {
-        return [pscustomobject][ordered]@{
-            connectorName       = 'Windows Autopilot'
-            connectorInstanceId = $null
-            status              = 'Not Enabled'
-            eventDateTime       = $null
+    if (-not $WindowsAutopilotSettings.success) {
+        if ($WindowsAutopilotSettings.statusCode -eq 404 -or $WindowsAutopilotSettings.statusCode -eq 400) {
+            return [pscustomobject][ordered]@{
+                connectorName       = 'Windows Autopilot'
+                connectorInstanceId = $null
+                status              = 'Not Enabled'
+                eventDateTime       = $null
+            }
+        }
+        else {
+            return [pscustomobject][ordered]@{
+                connectorName       = 'Windows Autopilot'
+                connectorInstanceId = $null
+                status              = Format-GraphResponseSummary -Response $WindowsAutopilotSettings
+                eventDateTime       = $null
+            }
         }
     }
 
