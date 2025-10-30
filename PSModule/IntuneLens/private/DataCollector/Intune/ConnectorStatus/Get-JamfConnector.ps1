@@ -50,7 +50,7 @@ function Get-JamfConnector {
         return [pscustomobject]@{
             success               = $resp.success
             id                    = if ($jamf.id) { $jamf.id } else { 'N/A' }
-            lastHeartbeatDateTime = if ($jamf.lastHeartbeatDateTime) { [datetime]$jamf.lastHeartbeatDateTime } else { 'N/A' }
+            lastHeartbeatDateTime = if ($jamf.lastHeartbeatDateTime) { [datetime]$jamf.lastHeartbeatDateTime } else { $null }
             partnerState          = if ($jamf.partnerState) { [string]$jamf.partnerState } else { 'N/A' }
             isConfigured          = if ($jamf.isConfigured) { $jamf.isConfigured } else { $false }
         }

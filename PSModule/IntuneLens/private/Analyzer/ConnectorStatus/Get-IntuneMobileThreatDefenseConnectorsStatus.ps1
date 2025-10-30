@@ -32,14 +32,21 @@ function Get-IntuneMobileThreatDefenseConnectorsStatus {
         [psobject] $MobileThreatDefenseConnectors
     )
 
-    if ($null -eq $MobileThreatDefenseConnectors -or (@($MobileThreatDefenseConnectors).Count -eq 0)) {
+    if (-not $MobileThreatDefenseConnectors.success) {
+        return [pscustomobject][ordered]@{
+            connectorName = 'Mobile Threat Defense Connectors (non-Microsoft)'
+            status        = Format-GraphResponseSummary -Response $MobileThreatDefenseConnectors
+        }
+    }
+
+    if ($null -eq $MobileThreatDefenseConnectors -or (@($MobileThreatDefenseConnectors.connectors).Count -eq 0)) {
         return [pscustomobject][ordered]@{
             connectorName = 'Mobile Threat Defense Connectors (non-Microsoft)'
             status        = 'Not Enabled'
         }
     }
 
-    $items = @($MobileThreatDefenseConnectors)
+    $items = @($MobileThreatDefenseConnectors.connectors)
 
     $now = Get-Date
     $rank = @{ unknown = 0; healthy = 1; warning = 2; unhealthy = 3 }

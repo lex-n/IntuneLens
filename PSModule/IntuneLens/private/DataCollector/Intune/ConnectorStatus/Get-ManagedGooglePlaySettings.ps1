@@ -51,7 +51,7 @@ function Get-ManagedGooglePlaySettings {
             lastAppSyncDateTime = if ($data -and $data.lastAppSyncDateTime) {
                 [datetime]$data.lastAppSyncDateTime
             }
-            else { 'N/A' }
+            else { $null }
             lastAppSyncStatus   = if ($data -and $data.lastAppSyncStatus) {
                 [string]$data.lastAppSyncStatus
             }

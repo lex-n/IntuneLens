@@ -50,7 +50,7 @@ function Get-MicrosoftDefenderForEndpointConnector {
         return [pscustomobject]@{
             success               = $resp.success
             id                    = if ($mde.id) { $mde.id } else { 'N/A' }
-            lastHeartbeatDateTime = if ($mde.lastHeartbeatDateTime) { [datetime]$mde.lastHeartbeatDateTime } else { 'N/A' }
+            lastHeartbeatDateTime = if ($mde.lastHeartbeatDateTime) { [datetime]$mde.lastHeartbeatDateTime } else { $null }
             partnerState          = if ($mde.partnerState) { [string]$mde.partnerState } else { 'N/A' }
         }
     }

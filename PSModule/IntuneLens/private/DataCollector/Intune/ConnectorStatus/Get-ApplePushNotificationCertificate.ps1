@@ -44,7 +44,7 @@ function Get-ApplePushNotificationCertificate {
             expirationDateTime = if ($data -and $data.expirationDateTime) {
                 [datetime]$data.expirationDateTime
             }
-            else { 'N/A' }
+            else { $null }
         }
     }
 }
