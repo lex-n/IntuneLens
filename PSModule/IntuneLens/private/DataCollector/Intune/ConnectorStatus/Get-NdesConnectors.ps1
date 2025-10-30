@@ -31,24 +31,24 @@ function Get-NdesConnectors {
 
     $url = "$endpoint`?`$select=id,lastConnectionDateTime,state"
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-        if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
-            return @() 
-        }
-
-        $items = foreach ($c in $resp.value) {
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $connectors = foreach ($c in $resp.data.value) {
             [pscustomobject]@{
-                id                     = $c.id
+                id                     = if ($c.id) { $c.id } else { 'N/A' }
                 lastConnectionDateTime = if ($c.lastConnectionDateTime) { [datetime]$c.lastConnectionDateTime } else { $null }
-                state                  = if ($c.state) { [string]$c.state } else { $null }
+                state                  = if ($c.state) { [string]$c.state } else { 'N/A' }
             }
         }
 
-        return $items
-    }
-    catch {
-        throw
+        $results = [pscustomobject]@{
+            success    = $resp.success
+            connectors = $connectors
+        }
+
+        return $results
     }
 }
