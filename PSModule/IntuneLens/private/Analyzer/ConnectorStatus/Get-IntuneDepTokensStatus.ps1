@@ -92,7 +92,6 @@ function Get-IntuneDepTokensStatus {
             else { $expStatus = 'healthy' }
         }
         
-
         if ($rank[$expStatus] -gt $rank[$expWorst]) {
             $expWorst = $expStatus
         }

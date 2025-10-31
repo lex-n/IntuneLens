@@ -29,26 +29,27 @@ function Get-VppTokens {
     $endpoint = "$base/deviceAppManagement/vppTokens"
     $headers = @{ Authorization = "Bearer $AccessToken" }
 
-    $url = "$endpoint`?`$select=id,expirationDateTime,lastSyncDateTime"
+    $url = "$endpoint`?`$select=id,expirationDateTime,lastSyncDateTime,lastSyncStatus"
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-        if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
-            return @()
-        }
-
-        $items = foreach ($t in $resp.value) {
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $tokens = foreach ($t in $resp.data.value) {
             [pscustomobject]@{
-                id                 = $t.id
+                id                 = if ($t.id) { $t.id } else { 'N/A' }
                 expirationDateTime = if ($t.expirationDateTime) { [datetime]$t.expirationDateTime } else { $null }
                 lastSyncDateTime   = if ($t.lastSyncDateTime) { [datetime]$t.lastSyncDateTime } else { $null }
+                lastSyncStatus     = if ($t.lastSyncStatus) { [string]$t.lastSyncStatus } else { 'N/A' }
             }
         }
 
-        return $items
-    }
-    catch {
-        throw
+        $results = [pscustomobject]@{
+            success = $resp.success
+            tokens  = $tokens
+        }
+
+        return $results
     }
 }

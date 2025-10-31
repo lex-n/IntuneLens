@@ -141,6 +141,7 @@ function Get-IntuneLensHealthOverview {
     $apns = Get-ApplePushNotificationCertificate -AccessToken $AccessToken
     $apnsStatus = Get-IntuneApnsStatus -ApplePushNotificationCertificate $apns
     $vppTokens = Get-VppTokens -AccessToken $AccessToken
+    $vppTokensStatus = Get-IntuneVppTokensStatus -VppTokens $vppTokens
     $depTokens = Get-DepTokens -AccessToken $AccessToken
     $depTokensStatus = Get-IntuneDepTokensStatus -DepTokens $depTokens
     $managedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
@@ -155,18 +156,6 @@ function Get-IntuneLensHealthOverview {
     $mdeConnectorStatus = Get-IntuneMicrosoftDefenderForEndpointConnectorStatus -MicrosoftDefenderForEndpointConnector $mdeConnector
     $jamfConnector = Get-JamfConnector -AccessToken $AccessToken
     $jamfConnectorStatus = Get-IntuneJamfConnectorStatus -JamfConnector $jamfConnector
-
-    $connectorInputs = [ordered]@{
-        'Apple VPP' = $vppTokens
-    }
-
-    $connectorsNotEnabled = [ordered]@{}
-    foreach ($name in $connectorInputs.Keys) {
-        $val = $connectorInputs[$name]
-        if ($null -eq $val -or (@($val).Count -eq 0)) {
-            $connectorsNotEnabled[$name] = 'Not Enabled'
-        }
-    }
 
     $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
     $connectorStatusSection =
@@ -191,6 +180,9 @@ function Get-IntuneLensHealthOverview {
     foreach ($statusItem in $depTokensStatus) {
         $combinedConnectorStatus[$statusItem.connectorName] = $statusItem.status
     }
+    foreach ($statusItem in $vppTokensStatus) {
+        $combinedConnectorStatus[$statusItem.connectorName] = $statusItem.status
+    }
     $combinedConnectorStatus[$managedGooglePlayAppStatus.connectorName] = $managedGooglePlayAppStatus.status
     $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
     $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
@@ -202,12 +194,6 @@ function Get-IntuneLensHealthOverview {
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {
             $combinedConnectorStatus[$p.Name] = $p.Value
-        }
-    }
-
-    if ($null -ne $connectorsNotEnabled -and $connectorsNotEnabled.Count -gt 0) {
-        foreach ($name in $connectorsNotEnabled.Keys) {
-            $combinedConnectorStatus[$name] = $connectorsNotEnabled[$name]
         }
     }
 
