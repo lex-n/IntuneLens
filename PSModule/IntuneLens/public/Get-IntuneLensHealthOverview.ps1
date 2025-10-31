@@ -142,6 +142,7 @@ function Get-IntuneLensHealthOverview {
     $apnsStatus = Get-IntuneApnsStatus -ApplePushNotificationCertificate $apns
     $vppTokens = Get-VppTokens -AccessToken $AccessToken
     $depTokens = Get-DepTokens -AccessToken $AccessToken
+    $depTokensStatus = Get-IntuneDepTokensStatus -DepTokens $depTokens
     $managedGooglePlaySettings = Get-ManagedGooglePlaySettings -AccessToken $AccessToken
     $managedGooglePlayAppStatus = Get-IntuneManagedGooglePlayAppStatus -ManagedGooglePlaySettings $managedGooglePlaySettings
     $windowsAutopilotSettings = Get-WindowsAutopilotSettings -AccessToken $AccessToken
@@ -157,7 +158,6 @@ function Get-IntuneLensHealthOverview {
 
     $connectorInputs = [ordered]@{
         'Apple VPP' = $vppTokens
-        'Apple DEP' = $depTokens
     }
 
     $connectorsNotEnabled = [ordered]@{}
@@ -188,12 +188,16 @@ function Get-IntuneLensHealthOverview {
 
     $combinedConnectorStatus = [ordered]@{}
     $combinedConnectorStatus[$apnsStatus.connectorName] = $apnsStatus.status
+    foreach ($statusItem in $depTokensStatus) {
+        $combinedConnectorStatus[$statusItem.connectorName] = $statusItem.status
+    }
     $combinedConnectorStatus[$managedGooglePlayAppStatus.connectorName] = $managedGooglePlayAppStatus.status
     $combinedConnectorStatus[$ndesConnectorsStatus.connectorName] = $ndesConnectorsStatus.status
     $combinedConnectorStatus[$jamfConnectorStatus.connectorName] = $jamfConnectorStatus.status
     $combinedConnectorStatus[$mdeConnectorStatus.connectorName] = $mdeConnectorStatus.status
-    $combinedConnectorStatus[$windowsAutopilotStatus.connectorName] = $windowsAutopilotStatus.status
     $combinedConnectorStatus[$mobileThreatDefenseConnectorsStatus.connectorName] = $mobileThreatDefenseConnectorsStatus.status
+    $combinedConnectorStatus[$windowsAutopilotStatus.connectorName] = $windowsAutopilotStatus.status
+
 
     if ($null -ne $connectorStatusSection -and $connectorStatusSection.Count -gt 0) {
         foreach ($p in $connectorStatusSection.PSObject.Properties) {

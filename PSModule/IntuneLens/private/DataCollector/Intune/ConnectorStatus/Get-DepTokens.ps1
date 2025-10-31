@@ -31,25 +31,25 @@ function Get-DepTokens {
 
     $url = "$endpoint`?`$select=id,tokenExpirationDateTime,lastSuccessfulSyncDateTime,lastSyncErrorCode"
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-        if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
-            return @()
-        }
-
-        $items = foreach ($d in $resp.value) {
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $tokens = foreach ($d in $resp.data.value) {
             [pscustomobject]@{
-                id                         = $d.id
+                id                         = if ($d.id) { $d.id } else { 'N/A' }
                 tokenExpirationDateTime    = if ($d.tokenExpirationDateTime) { [datetime]$d.tokenExpirationDateTime } else { $null }
                 lastSuccessfulSyncDateTime = if ($d.lastSuccessfulSyncDateTime) { [datetime]$d.lastSuccessfulSyncDateTime } else { $null }
-                lastSyncErrorCode          = $d.lastSyncErrorCode
+                lastSyncErrorCode          = if($d.lastSyncErrorCode) { $d.lastSyncErrorCode } else { 0 }
             }
         }
 
-        return $items
-    }
-    catch {
-        throw
+        $results = [pscustomobject]@{
+            success    = $resp.success
+            tokens = $tokens
+        }
+
+        return $results
     }
 }
