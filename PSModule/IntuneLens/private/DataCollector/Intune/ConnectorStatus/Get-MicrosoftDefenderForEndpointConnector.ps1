@@ -42,8 +42,10 @@ function Get-MicrosoftDefenderForEndpointConnector {
 
         if (-not $mde) {
             return [pscustomobject]@{
-                success      = $resp.success
-                partnerState = 'notSetUp'
+                success               = $resp.success
+                id                    = $null
+                lastHeartbeatDateTime = $null
+                partnerState          = 'notSetUp'
             }
         }
 

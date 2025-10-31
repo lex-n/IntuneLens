@@ -42,8 +42,11 @@ function Get-JamfConnector {
 
         if (-not $jamf) {
             return [pscustomobject]@{
-                success      = $resp.success
-                isConfigured = $false
+                success               = $resp.success
+                id                    = $null
+                lastHeartbeatDateTime = $null
+                partnerState          = $null
+                isConfigured          = $false
             }
         }
 

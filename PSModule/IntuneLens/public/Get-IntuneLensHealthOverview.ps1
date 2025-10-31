@@ -170,9 +170,9 @@ function Get-IntuneLensHealthOverview {
 
     $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
     $connectorStatusSection =
-    if (@($connectorStatus).Count -gt 0) {
+    if ($connectorStatus.success -and @($connectorStatus.connectors).Count -gt 0) {
         $o = [ordered]@{}
-        foreach ($c in $connectorStatus) {
+        foreach ($c in $connectorStatus.connectors) {
             if ($null -ne $mdeConnector -and
                 $null -ne $mdeConnector.id -and
                 $null -ne $c.connectorInstanceId -and

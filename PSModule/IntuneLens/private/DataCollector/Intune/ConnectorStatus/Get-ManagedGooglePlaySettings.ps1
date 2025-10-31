@@ -38,13 +38,6 @@ function Get-ManagedGooglePlaySettings {
     else {
         $data = $resp.data
 
-        if ($null -eq $data -or ($data.bindStatus -and $data.bindStatus -eq 'notBound')) { 
-            return [pscustomobject]@{
-                success    = $resp.success
-                bindStatus = $data.bindStatus
-            }
-        }
-
         return [pscustomobject]@{
             success             = $resp.success
             id                  = if ($data -and $data.id) { $data.id } else { 'N/A' }

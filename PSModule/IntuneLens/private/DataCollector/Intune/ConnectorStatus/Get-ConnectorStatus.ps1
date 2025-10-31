@@ -29,14 +29,12 @@ function Get-ConnectorStatus {
 
     $url = $endpoint
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-        if ($null -eq $resp.value -or $resp.value.Count -eq 0) {
-            return @()
-        }
-
-        $items = foreach ($c in $resp.value) {
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $connectors = foreach ($c in $resp.data.value) {
             [pscustomobject]@{
                 connectorName       = $c.connectorName
                 connectorInstanceId = $c.connectorInstanceId
@@ -44,9 +42,11 @@ function Get-ConnectorStatus {
             }
         }
 
-        return $items
-    }
-    catch {
-        throw
+        $results = [pscustomobject]@{
+            success    = $resp.success
+            connectors = $connectors
+        }
+
+        return $results
     }
 }
