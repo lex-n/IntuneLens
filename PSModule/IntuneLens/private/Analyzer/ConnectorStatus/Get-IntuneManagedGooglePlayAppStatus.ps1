@@ -30,7 +30,16 @@ function Get-IntuneManagedGooglePlayAppStatus {
         [pscustomobject] $ManagedGooglePlaySettings
     )
 
-    if ($null -eq $ManagedGooglePlaySettings -or (@($ManagedGooglePlaySettings).Count -eq 0)) {
+    if (-not $ManagedGooglePlaySettings.success) {
+        return [pscustomobject][ordered]@{
+            connectorName       = 'Managed Google Play App'
+            connectorInstanceId = $null
+            status              = Format-GraphResponseSummary -Response $ManagedGooglePlaySettings
+            eventDateTime       = $null
+        }
+    }
+
+    if ($null -eq $ManagedGooglePlaySettings -or $ManagedGooglePlaySettings.bindStatus -eq 'notBound') {
         return [pscustomobject][ordered]@{
             connectorName       = 'Managed Google Play App'
             connectorInstanceId = $null

@@ -30,7 +30,16 @@ function Get-IntuneMicrosoftDefenderForEndpointConnectorStatus {
         [pscustomobject] $MicrosoftDefenderForEndpointConnector
     )
 
-    if ($null -eq $MicrosoftDefenderForEndpointConnector -or (@($MicrosoftDefenderForEndpointConnector).Count -eq 0)) {
+    if (-not $MicrosoftDefenderForEndpointConnector.success) {
+        return [pscustomobject][ordered]@{
+            connectorName       = 'Microsoft Defender for Endpoint Connector'
+            connectorInstanceId = $null
+            status              = Format-GraphResponseSummary -Response $MicrosoftDefenderForEndpointConnector
+            eventDateTime       = $null
+        }
+    }
+
+    if ($null -eq $MicrosoftDefenderForEndpointConnector -or $MicrosoftDefenderForEndpointConnector.partnerState -eq 'notSetUp') {
         return [pscustomobject][ordered]@{
             connectorName       = 'Microsoft Defender for Endpoint Connector'
             connectorInstanceId = $null

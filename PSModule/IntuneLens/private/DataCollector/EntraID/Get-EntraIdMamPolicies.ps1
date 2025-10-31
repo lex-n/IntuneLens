@@ -30,16 +30,26 @@ function Get-EntraIdMamPolicies {
 
     $url = "$endpoint`?`$filter=displayName eq 'Microsoft Intune'&`$select=displayName,appliesTo,isValid"
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-    if ($resp.value.Count -gt 0) {
-        return [pscustomobject]@{
-            displayName = $resp.value[0].displayName
-            appliesTo   = $resp.value[0].appliesTo
-            isValid     = $resp.value[0].isValid
-        }
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
     }
     else {
-        return $null
+        if ($resp.data.value.Count -gt 0) {
+            return [pscustomobject]@{
+                success     = $resp.success
+                displayName = $resp.data.value[0].displayName
+                appliesTo   = $resp.data.value[0].appliesTo
+                isValid     = $resp.data.value[0].isValid
+            }
+        }
+        else {
+            return [pscustomobject]@{
+                success     = $resp.success
+                displayName = 'N/A'
+                appliesTo   = 'N/A'
+                isValid     = 'N/A'
+            }
+        }
     }
 }

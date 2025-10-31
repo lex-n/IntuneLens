@@ -23,7 +23,7 @@ function Get-MdmAuthority {
     #>
 
     [CmdletBinding()]
-    [OutputType([string])]
+    [OutputType([pscustomobject])]
     param(
         [Parameter(Mandatory)]
         [string] $AccessToken,
@@ -38,7 +38,17 @@ function Get-MdmAuthority {
 
     $url = "$endpoint`?`$select=mobileDeviceManagementAuthority"
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-    return $resp.mobileDeviceManagementAuthority
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        return [pscustomobject]@{
+            success                         = $resp.success
+            mobileDeviceManagementAuthority = if ($resp.data -and $resp.data.mobileDeviceManagementAuthority) {
+                $resp.data.mobileDeviceManagementAuthority
+            }
+            else { 'N/A' }
+        }
+    }
 }

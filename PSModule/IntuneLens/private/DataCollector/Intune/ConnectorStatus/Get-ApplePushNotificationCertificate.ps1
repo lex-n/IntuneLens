@@ -31,37 +31,20 @@ function Get-ApplePushNotificationCertificate {
 
     $url = $endpoint
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-        $id = $null
-        if ($resp.PSObject.Properties.Name -contains 'id' -and $resp.id) {
-            $id = $resp.id
-        }
-        
-        $expirationDateTime = $null
-        if ($resp.PSObject.Properties.Name -contains 'expirationDateTime' -and $resp.expirationDateTime) {
-            $expirationDateTime = [datetime]$resp.expirationDateTime
-        }
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $data = $resp.data
 
         return [pscustomobject]@{
-            id                 = $id
-            expirationDateTime = $expirationDateTime
-        }
-    }
-    catch {
-        $statusCode = $null
-        try {
-            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
-                $statusCode = $_.Exception.Response.StatusCode.value__
+            success            = $resp.success
+            id                 = if ($data -and $data.id) { $data.id } else { 'N/A' }
+            expirationDateTime = if ($data -and $data.expirationDateTime) {
+                [datetime]$data.expirationDateTime
             }
+            else { $null }
         }
-        catch { }
-
-        if ($statusCode -eq 404) {
-            return @()
-        }
-
-        throw
     }
 }

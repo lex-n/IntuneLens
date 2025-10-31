@@ -31,23 +31,29 @@ function Get-MicrosoftDefenderForEndpointConnector {
 
     $url = "$endpoint`?`$select=id,lastHeartbeatDateTime,partnerState,microsoftDefenderForEndpointAttachEnabled"
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-        $items = if ($resp.value) { $resp.value } else { @() }
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $items = if ($resp.data.value) { $resp.data.value } else { @() }
 
         $mde = $items | Where-Object { $_.microsoftDefenderForEndpointAttachEnabled -eq $true } | Select-Object -First 1
 
         if (-not $mde) {
-            return @()
+            return [pscustomobject]@{
+                success               = $resp.success
+                id                    = $null
+                lastHeartbeatDateTime = $null
+                partnerState          = 'notSetUp'
+            }
         }
 
         return [pscustomobject]@{
-            id                    = $mde.id
+            success               = $resp.success
+            id                    = if ($mde.id) { $mde.id } else { 'N/A' }
             lastHeartbeatDateTime = if ($mde.lastHeartbeatDateTime) { [datetime]$mde.lastHeartbeatDateTime } else { $null }
-            partnerState          = if ($mde.partnerState) { [string]$mde.partnerState } else { $null }
+            partnerState          = if ($mde.partnerState) { [string]$mde.partnerState } else { 'N/A' }
         }
-    }
-    catch {
-        throw
     }
 }

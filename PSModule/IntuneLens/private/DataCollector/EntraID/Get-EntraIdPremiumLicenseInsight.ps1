@@ -31,15 +31,47 @@ function Get-EntraIdPremiumLicenseInsight {
 
     $url = $endpoint
 
-    $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        return [pscustomobject]@{
+            success                                = $resp.success
+            entitledP1LicenseCount                 = if ($resp.data -and $resp.data.entitledP1LicenseCount) {
+                $resp.data.entitledP1LicenseCount
+            }
+            else { 0 }
 
-    return [pscustomobject]@{
-        entitledP1LicenseCount                 = $resp.entitledP1LicenseCount
-        entitledP2LicenseCount                 = $resp.entitledP2LicenseCount
-        entitledTotalLicenseCount              = $resp.entitledTotalLicenseCount
-        p1ConditionalAccessUsers               = $resp.p1FeatureUtilizations.conditionalAccess.userCount
-        p1ConditionalAccessGuestUsers          = $resp.p1FeatureUtilizations.conditionalAccessGuestUsers.userCount
-        p2RiskBasedConditionalAccessUsers      = $resp.p2FeatureUtilizations.riskBasedConditionalAccess.userCount
-        p2RiskBasedConditionalAccessGuestUsers = $resp.p2FeatureUtilizations.riskBasedConditionalAccessGuestUsers.userCount
+            entitledP2LicenseCount                 = if ($resp.data -and $resp.data.entitledP2LicenseCount) {
+                $resp.data.entitledP2LicenseCount
+            }
+            else { 0 }
+
+            entitledTotalLicenseCount              = if ($resp.data -and $resp.data.entitledTotalLicenseCount) {
+                $resp.data.entitledTotalLicenseCount
+            }
+            else { 0 }
+
+            p1ConditionalAccessUsers               = if ($resp.data -and $resp.data.p1FeatureUtilizations.conditionalAccess.userCount) {
+                $resp.data.p1FeatureUtilizations.conditionalAccess.userCount
+            }
+            else { 0 }
+
+            p1ConditionalAccessGuestUsers          = if ($resp.data -and $resp.data.p1FeatureUtilizations.conditionalAccessGuestUsers.userCount) {
+                $resp.data.p1FeatureUtilizations.conditionalAccessGuestUsers.userCount
+            }
+            else { 0 }
+
+            p2RiskBasedConditionalAccessUsers      = if ($resp.data -and $resp.data.p2FeatureUtilizations.riskBasedConditionalAccess.userCount) {
+                $resp.data.p2FeatureUtilizations.riskBasedConditionalAccess.userCount
+            }
+            else { 0 }
+
+            p2RiskBasedConditionalAccessGuestUsers = if ($resp.data -and $resp.data.p2FeatureUtilizations.riskBasedConditionalAccessGuestUsers.userCount) {
+                $resp.data.p2FeatureUtilizations.riskBasedConditionalAccessGuestUsers.userCount
+            }
+            else { 0 }
+        }
     }
 }

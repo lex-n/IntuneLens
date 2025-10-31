@@ -32,14 +32,21 @@ function Get-IntuneNdesConnectorsStatus {
         [pscustomobject] $NdesConnectors
     )
 
-    if ($null -eq $NdesConnectors -or (@($NdesConnectors).Count -eq 0)) {
+    if (-not $NdesConnectors.success) {
+        return [pscustomobject][ordered]@{
+            connectorName = 'NDES Connectors'
+            status        = Format-GraphResponseSummary -Response $NdesConnectors
+        }
+    }
+
+    if ($null -eq $NdesConnectors -or (@($NdesConnectors.connectors).Count -eq 0)) {
         return [pscustomobject][ordered]@{
             connectorName = 'NDES Connectors'
             status        = 'Not Enabled'
         }
     }
 
-    $items = @($NdesConnectors)
+    $items = @($NdesConnectors.connectors)
 
     $now = Get-Date
     $rank = @{ unknown = 0; healthy = 1; warning = 2; unhealthy = 3 }

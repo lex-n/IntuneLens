@@ -30,12 +30,22 @@ function Get-IntuneApnsStatus {
         [pscustomobject] $ApplePushNotificationCertificate
     )
 
-    if ($null -eq $ApplePushNotificationCertificate -or (@($ApplePushNotificationCertificate).Count -eq 0)) {
-        return [pscustomobject][ordered]@{
-            connectorName       = 'APNS certificate'
-            connectorInstanceId = $null
-            status              = 'Not Enabled'
-            eventDateTime       = $null
+    if (-not $ApplePushNotificationCertificate.success) {
+        if ($ApplePushNotificationCertificate.statusCode -eq 404) {
+            return [pscustomobject][ordered]@{
+                connectorName       = 'APNS certificate'
+                connectorInstanceId = $null
+                status              = 'Not Enabled'
+                eventDateTime       = $null
+            }
+        }
+        else {
+            return [pscustomobject][ordered]@{
+                connectorName       = 'APNS certificate'
+                connectorInstanceId = $null
+                status              = Format-GraphResponseSummary -Response $ApplePushNotificationCertificate
+                eventDateTime       = $null
+            }
         }
     }
 

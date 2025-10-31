@@ -170,9 +170,9 @@ function Get-IntuneLensHealthOverview {
 
     $connectorStatus = Get-ConnectorStatus -AccessToken $AccessToken
     $connectorStatusSection =
-    if (@($connectorStatus).Count -gt 0) {
+    if ($connectorStatus.success -and @($connectorStatus.connectors).Count -gt 0) {
         $o = [ordered]@{}
-        foreach ($c in $connectorStatus) {
+        foreach ($c in $connectorStatus.connectors) {
             if ($null -ne $mdeConnector -and
                 $null -ne $mdeConnector.id -and
                 $null -ne $c.connectorInstanceId -and
@@ -223,15 +223,23 @@ function Get-IntuneLensHealthOverview {
             "Company branding"        = $companyBrandingConfigStatus
             "Security defaults"       = if ($securityDefaultsPolicy.isEnabled) { "Enabled" } else { "Not Enabled" }
         }
-        "Entra ID licenses"      = [pscustomobject][ordered]@{
-            "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
-            "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
-            "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
-            "P1 conditional access usage (members)"            = $entraIdPremiumLicenseInsight.p1ConditionalAccessUsers
-            "P1 conditional access usage (guests)"             = $entraIdPremiumLicenseInsight.p1ConditionalAccessGuestUsers
-            "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
-            "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
+        "Entra ID licenses"      = if ($entraIdPremiumLicenseInsight.success) {
+            [pscustomobject][ordered]@{
+                "Microsoft Entra ID P1"                            = $entraIdPremiumLicenseInsight.entitledP1LicenseCount
+                "Microsoft Entra ID P2"                            = $entraIdPremiumLicenseInsight.entitledP2LicenseCount
+                "Total Entra ID licenses"                          = $entraIdPremiumLicenseInsight.entitledTotalLicenseCount
+                "P1 conditional access usage (members)"            = $entraIdPremiumLicenseInsight.p1ConditionalAccessUsers
+                "P1 conditional access usage (guests)"             = $entraIdPremiumLicenseInsight.p1ConditionalAccessGuestUsers
+                "P2 risk-based conditional access usage (members)" = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessUsers
+                "P2 risk-based conditional access usage (guests)"  = $entraIdPremiumLicenseInsight.p2RiskBasedConditionalAccessGuestUsers
+            }
         }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $entraIdPremiumLicenseInsight)
+            }
+        }
+        
         "Mobility (MDM and WIP)" = [pscustomobject][ordered]@{
             "Microsoft Intune" = if ($mobilitySummary.hasMicrosoftIntune) { "Yes" } else { "No" }
             "MDM applies to"   = $mobilitySummary.mdmAppliesTo
@@ -241,36 +249,77 @@ function Get-IntuneLensHealthOverview {
 
     $IntuneReport = [ordered]@{
         "Basic information"                              = [pscustomobject][ordered]@{
-            "MDM authority"                                      = $mdmAuthority
-            "Subscription state"                                 = $intuneSubscriptionState.subscriptionState
-            "Total enrolled devices"                             = $managedDeviceOverview.enrolledDeviceCount
-            "MDM enrolled devices"                               = $managedDeviceOverview.mdmEnrolledCount
-            "Dual-enrolled (MDM and EAS) devices"                = $managedDeviceOverview.dualEnrolledDeviceCount
-            "Mark devices with no compliance policy assigned as" = $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
+            "MDM authority"                                      = if ($mdmAuthority.success) {
+                $mdmAuthority.mobileDeviceManagementAuthority
+            }
+            else {
+                Format-GraphResponseSummary -Response $mdmAuthority
+            }
+
+            "Subscription state"                                 = if ($intuneSubscriptionState.success) {
+                $intuneSubscriptionState.subscriptionState
+            }
+            else {
+                Format-GraphResponseSummary -Response $intuneSubscriptionState
+            }
+
+            "Mark devices with no compliance policy assigned as" = if ($deviceManagementSettings.success) {
+                $compliancePolicySettings.devicesWithoutCompliancePolicyAssigned
+            }
+            else {
+                Format-GraphResponseSummary -Response $deviceManagementSettings
+            }
         }
+        "Enrolled devices"                               = if ($managedDeviceOverview.success) {
+            [pscustomobject][ordered]@{
+                "Total enrolled devices"              = $managedDeviceOverview.enrolledDeviceCount
+                "MDM enrolled devices"                = $managedDeviceOverview.mdmEnrolledCount
+                "Dual-enrolled (MDM and EAS) devices" = $managedDeviceOverview.dualEnrolledDeviceCount
+            }
+        }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $managedDeviceOverview)
+            }
+        }
+        "Device operating system"                        = if ($managedDeviceOverview.success) {
+            [pscustomobject][ordered]@{
+                "Windows"        = $managedDeviceOverview.windowsCount
+                "macOS"          = $managedDeviceOverview.macOSCount
+                "iOS"            = $managedDeviceOverview.iOSCount
+                "Android"        = $managedDeviceOverview.androidCount
+                "Linux"          = $managedDeviceOverview.linuxCount
+                "Windows Mobile" = $managedDeviceOverview.windowsMobileCount
+                "Total"          = $managedDeviceOverview.enrolledDeviceCount
+            }
+        }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $managedDeviceOverview)
+            }
+        }
+
         "Intune licenses"                                = [pscustomobject][ordered]@{
             "Total Intune licenses" = $totalIntuneLicenses
             "Total licensed users"  = $totalIntuneLicensedUsers
         }
         "Intune add-ons (consumed / purchased quantity)" = $intuneAddOnsSection
-        "Device operating system"                        = [pscustomobject][ordered]@{
-            "Windows"        = $managedDeviceOverview.windowsCount
-            "macOS"          = $managedDeviceOverview.macOSCount
-            "iOS"            = $managedDeviceOverview.iOSCount
-            "Android"        = $managedDeviceOverview.androidCount
-            "Linux"          = $managedDeviceOverview.linuxCount
-            "Windows Mobile" = $managedDeviceOverview.windowsMobileCount
-            "Total"          = $managedDeviceOverview.enrolledDeviceCount
+        "Device compliance status"                       = if ($deviceComplianceStatus.success) {
+            [pscustomobject][ordered]@{
+                "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
+                "In grace period" = $deviceComplianceStatus.inGracePeriodCount
+                "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
+                "Not evaluated"   = $deviceComplianceStatus.unknownDeviceCount
+                "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
+                "Error"           = $deviceComplianceStatus.errorDeviceCount
+                "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
+            }
         }
-        "Device compliance status"                       = [pscustomobject][ordered]@{
-            "Compliant"       = $deviceComplianceStatus.compliantDeviceCount
-            "In grace period" = $deviceComplianceStatus.inGracePeriodCount
-            "Not compliant"   = $deviceComplianceStatus.nonCompliantDeviceCount
-            "Not evaluated"   = $deviceComplianceStatus.unknownDeviceCount
-            "Not applicable"  = $deviceComplianceStatus.notApplicableDeviceCount
-            "Error"           = $deviceComplianceStatus.errorDeviceCount
-            "Conflict"        = $deviceComplianceStatus.conflictDeviceCount
-        }
+        else {
+            [pscustomobject][ordered]@{
+                Status = (Format-GraphResponseSummary -Response $deviceComplianceStatus)
+            }
+        }  
         "Service health and message center"              = [pscustomobject][ordered]@{
             "Active incidents"         = @($intuneActiveIncidents).Count
             "Active advisories"        = @($intuneActiveAdvisories).Count

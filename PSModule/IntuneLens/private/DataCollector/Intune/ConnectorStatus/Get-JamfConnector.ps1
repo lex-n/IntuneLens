@@ -31,32 +31,31 @@ function Get-JamfConnector {
 
     $url = "$endpoint`?`$select=id,displayName,isConfigured,lastHeartbeatDateTime,partnerState"
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-
-        $partners = @()
-        if ($resp -and $resp.PSObject.Properties.Name -contains 'value') {
-            $partners = $resp.value
-        }
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $partners = if ($resp.data.value) { $resp.data.value } else { @() }
 
         $jamf = $partners | Where-Object { $_.displayName -match '(?i)Jamf' } | Select-Object -First 1
 
-        if (-not $jamf -or -not $jamf.isConfigured) {
-            return @()
-        }
-
-        $lastHeartbeat = $null
-        if ($jamf.lastHeartbeatDateTime -and $jamf.lastHeartbeatDateTime -ne '0001-01-01T00:00:00Z') {
-            $lastHeartbeat = [datetime]$jamf.lastHeartbeatDateTime
+        if (-not $jamf) {
+            return [pscustomobject]@{
+                success               = $resp.success
+                id                    = $null
+                lastHeartbeatDateTime = $null
+                partnerState          = $null
+                isConfigured          = $false
+            }
         }
 
         return [pscustomobject]@{
-            id                    = $jamf.id
-            lastHeartbeatDateTime = $lastHeartbeat
-            partnerState          = [string]$jamf.partnerState
+            success               = $resp.success
+            id                    = if ($jamf.id) { $jamf.id } else { 'N/A' }
+            lastHeartbeatDateTime = if ($jamf.lastHeartbeatDateTime) { [datetime]$jamf.lastHeartbeatDateTime } else { $null }
+            partnerState          = if ($jamf.partnerState) { [string]$jamf.partnerState } else { 'N/A' }
+            isConfigured          = if ($jamf.isConfigured) { $jamf.isConfigured } else { $false }
         }
-    }
-    catch {
-        throw
     }
 }

@@ -31,27 +31,28 @@ function Get-MobileThreatDefenseConnectors {
 
     $url = "$endpoint`?`$select=id,lastHeartbeatDateTime,partnerState,microsoftDefenderForEndpointAttachEnabled"
 
-    try {
-        $resp = Invoke-RestMethod -Method GET -Uri $url -Headers $headers -ErrorAction Stop
-        $items = if ($resp.value) { $resp.value } else { @() }
+    $resp = Invoke-Graph -Method GET -Url $url -Headers $headers
+    if (-not $resp.success) {
+        return $resp
+    }
+    else {
+        $items = if ($resp.data.value) { $resp.data.value } else { @() }
 
         $thirdParty = $items | Where-Object { -not $_.microsoftDefenderForEndpointAttachEnabled }
 
-        if (@($thirdParty).Count -eq 0) {
-            return @()
-        }
-
-        $results = foreach ($c in $thirdParty) {
+        $connectors = foreach ($c in $thirdParty) {
             [pscustomobject]@{
-                id                    = $c.id
+                id                    = if ($c.id) { $c.id } else { 'N/A' }
                 lastHeartbeatDateTime = if ($c.lastHeartbeatDateTime) { [datetime]$c.lastHeartbeatDateTime } else { $null }
-                partnerState          = if ($c.partnerState) { [string]$c.partnerState } else { $null }
+                partnerState          = if ($c.partnerState) { [string]$c.partnerState } else { 'N/A' }
             }
         }
 
+        $results = [pscustomobject]@{
+            success    = $resp.success
+            connectors = $connectors
+        }
+
         return $results
-    }
-    catch {
-        throw
     }
 }
